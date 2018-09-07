@@ -1,0 +1,29 @@
+server:
+  port: 8086
+
+
+spring:
+  cloud:
+    stream:
+      bindings:
+        output:
+          destination: stream-rabbit #  目的，对应 MQ 是 exchange， 没有group生成临时队列
+          binder: local_rabbit
+          content-type: text/plain # 设置消息类型，本次为对象json，如果是文本则设置“application/json”
+          #group: output-group # 消费者这个属性才有用
+      rabbit:
+        bindings:
+          output:
+            producer:
+              routing-key-expression: '''routing-key'''  # 需要用这个来指定 RoutingKey
+      binders:
+        local_rabbit: # 表示定义的名称，用于于binding整合
+          type: rabbit # 消息组件类型
+          environment:
+            spring:
+              rabbitmq:
+                host: localhost
+                port: 5672
+                username: guest
+                password: guest
+                virtual-host: /

@@ -16,6 +16,7 @@ spring:
           input:
             consumer:
               bindingRoutingKey: 'routing-key'  # 需要用这个来指定 RoutingKey
+              acknowledge-mode: manual # 应答模式
       binders:
         local_rabbit: # 表示定义的名称，用于于binding整合
           type: rabbit # 消息组件类型

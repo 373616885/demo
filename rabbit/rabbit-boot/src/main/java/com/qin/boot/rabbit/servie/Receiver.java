@@ -41,7 +41,7 @@ public class Receiver {
         //  如果有dead-letter queue被设置的话该消息就会被置入, 否则被丢弃
         try {
 
-           //channel.basicAck(deliveryTag,false);
+           channel.basicAck(deliveryTag,false);
             //channel.basicNack(deliveryTag,false,false);
             channel.basicReject(deliveryTag,false); //与basicNack差异缺少multiple参数
         } catch (Exception e) {

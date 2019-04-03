@@ -24,10 +24,13 @@ public class RabbitMQExchangeConfig {
     @Bean
     public Queue queue() {
         // 是否持久化
+        // the queue will survive a broker restart
         boolean durable = false;
         // 仅创建者可以使用的私有队列，断开后自动删除
+        // used by only one connection and the queue will be deleted when that connection closes
         boolean exclusive = false;
         // 当所有消费客户端连接断开后，是否自动删除队列
+        // queue that has had at least one consumer is deleted when last consumer unsubscribes
         boolean autoDelete = false;
 
 

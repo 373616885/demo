@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.qin.boot</groupId>
-	<artifactId>rabbit</artifactId>
+	<artifactId>rabbit-boot</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>rabbit</name>
+	<name>rabbit-boot</name>
 	<description>Demo project for Spring Boot</description>
 
 	<parent>

@@ -37,6 +37,8 @@ public class Send {
      */
     public void send(String msg) {
 
+        // pub message是没有ack的 只有消费端才有
+
         rabbitTemplate.setMandatory(true);
         rabbitTemplate.setConfirmCallback(publisherConfirmCallBack);
         rabbitTemplate.setReturnCallback(publisherReturnCallback);

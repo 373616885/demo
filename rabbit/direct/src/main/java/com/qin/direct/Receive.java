@@ -50,12 +50,12 @@ public class Receive {
 //            System.out.println("key : " + k + "   value :" + v);
 //        });
         //System.out.println(" deliveryTagId : " + deliveryTag);
-       System.out.println("Received D:" + message);
+        System.out.println("Received D:" + message);
         // AmqpRejectAndDontRequeueException
         //  这个异常不会重新发送回来
         //  如果有dead-letter queue被设置的话该消息就会被置入, 否则被丢弃
 //        try {
-//
+//             // pub message是没有ack的 只有消费端才有
 //            channel.basicAck(deliveryTag,false);
 //            //channel.basicNack(deliveryTag,false,false);
 //            channel.basicReject(deliveryTag,false); //与basicNack差异缺少multiple参数

@@ -1,5 +1,4 @@
 /rabbit/.idea
-/rabbit/rabbit.iml
+/rabbit/*.iml
 /rabbit/rabbit-boot/*.iml
-/rabbit/rabbit-boot/rabbit-boot.iml
-rabbit/rabbit-boot/rabbit-boot.iml
+/rabbit/rabbit-boot/target

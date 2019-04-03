@@ -39,7 +39,14 @@ public class Config {
        // rabbitTemplate.setReturnCallback(publisherReturnCallback);
     //}
 
-
+    /**
+     * 一个 RabbitTemplate 只能设置一个 publisherConfirmCallBack
+     * 所有的回调都调同一个方法
+     * 不然报 Only one ConfirmCallback is supported by each RabbitTemplate
+     * 如果想回调不同的方法就必须是多例每次bean都是新的
+     * RabbitTemplate @Scope("prototype")
+     * 然后就可以每个send方法都有自己的回调
+     */
     @Bean
     @Scope("prototype")
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {

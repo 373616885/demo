@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
 import javax.annotation.PostConstruct;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @Author qinjp
@@ -57,7 +59,9 @@ public class Config {
     }
 
     /**
-     * 自定义一个Queue
+     * 自定义一个
+     * 如果Rabbit上已经有一个相同名的Queue
+     * 有可能报异常，或者和你设置不一样的Queue被使用
      */
     @Bean
     public Queue queue() {
@@ -68,16 +72,16 @@ public class Config {
         // 当所有消费客户端连接断开后，是否自动删除队列
         boolean autoDelete = false;
 
-        //Map<String, Object> args = new HashMap<String, Object>();
-        //args.put("x-message-ttl", 60000);// 定义消息在队列中存活时间--这是全局设置， -- 毫秒   1000 = 1秒 这里是60 秒 不能设置为 0
+        Map<String, Object> args = new HashMap<String, Object>();
+        args.put("x-message-ttl", 6000);// 定义消息在队列中存活时间--这是全局设置， -- 毫秒   1000 = 1秒 这里是60 秒 不能设置为 0
         // 队列在没有消费者空闲30分钟后将被自动删除
         //args.put("x-expires", 1800000);// queue 上没有任何 consumer -- 以毫秒为单位 不能设置为 0 这里是30分钟
         // 绑定死信交换机
-        //args.put("x-dead-letter-exchange", "dead_letter_exchange");//设置死信交换机
+        args.put("x-dead-letter-exchange", "dead_letter_exchange");//设置死信交换机
         // 绑定死信交换机
-        //args.put("x-dead-letter-routing-key", "dead_letter_routing-key");//设置死信routingKey
+        args.put("x-dead-letter-routing-key", "dead_letter_routing-key");//设置死信routingKey
 
-        return new Queue("direct-queue", durable, exclusive, autoDelete);
+        return new Queue("direct-queue", durable, exclusive, autoDelete, args);
     }
 
     @Bean

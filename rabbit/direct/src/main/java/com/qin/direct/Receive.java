@@ -16,22 +16,18 @@ import java.util.Map;
 @Service
 public class Receive {
 
-    @RabbitListener(queues = "direct-queue")    //监听器监听指定的Queue
+    //@RabbitListener(queues = "direct-queue")    //监听器监听指定的Queue
     public void processA(String str) {
         System.out.println("Receive A:" + str);
     }
 
-    @RabbitListener(queues = "direct-queue")    //监听器监听指定的Queue
+    //@RabbitListener(queues = "direct-queue")    //监听器监听指定的Queue
     public void processB(String str) {
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         System.out.println("Receive B:" + str);
+
     }
 
-    @RabbitListener(queues = "direct-queue")    //监听器监听指定的Queue
+    //@RabbitListener(queues = "direct-queue")    //监听器监听指定的Queue
     public void processC(String str) {
         try {
             Thread.sleep(10000);
@@ -51,6 +47,7 @@ public class Receive {
 //        });
         //System.out.println(" deliveryTagId : " + deliveryTag);
         System.out.println("Received D:" + message);
+        int a =1/0;
         // AmqpRejectAndDontRequeueException
         //  这个异常不会重新发送回来
         //  如果有dead-letter queue被设置的话该消息就会被置入, 否则被丢弃

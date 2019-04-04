@@ -42,9 +42,9 @@ public class DirectApplication {
     @GetMapping("send")
     public void send(){
         send.send("AAAA");
-        send2.send2("BBBB");
-        send.send("CCCC");
-        send2.send2("DDDD");
+        //send2.send2("BBBB");
+        //send.send("CCCC");
+        //send2.send2("DDDD");
 //        send.send("EEEE");
     }
 

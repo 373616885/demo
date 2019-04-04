@@ -62,6 +62,7 @@ public class Config {
      * 自定义一个
      * 如果Rabbit上已经有一个相同名的Queue
      * 有可能报异常，或者和你设置不一样的Queue被使用
+     * 所以要确保创建的Queue和你设置的一样第一次创建就要先删除服务器上的相同的Queue
      */
     @Bean
     public Queue queue() {

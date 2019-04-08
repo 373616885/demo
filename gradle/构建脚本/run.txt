@@ -1,0 +1,9 @@
+gradle -q helloword
+
+gradle –q upper
+
+gradle –q count
+
+gradle –q groovyJDKMethod
+
+快捷键（<<符号表示） doLast 语句来简化

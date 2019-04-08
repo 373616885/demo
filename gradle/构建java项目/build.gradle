@@ -4,9 +4,9 @@ version = '0.1.1'
 sourceCompatibility = '1.8'
 
 repositories {
-   //jcenter²Ö¿â https://jcenter.bintray.com 
+   //jcenterä»“åº“ https://jcenter.bintray.com 
    //jcenter()
-   //mavenÖÐÑë²Ö¿â http://repo1.maven.org/maven2/
+   //mavenä¸­å¤®ä»“åº“ http://repo1.maven.org/maven2/
    mavenCentral()
 }
 

@@ -16,6 +16,7 @@ public class Two implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         if (arg == null) {
+            // 被观察者身上获取以改变的数据
             receive(((Publish) o).getData());
             return;
         }

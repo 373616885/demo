@@ -15,6 +15,13 @@ dependencies {
    testCompile 'junit:junit:4.12'
 }
 
+jar {
+    baseName = 'test-gradle'
+    version = '1.0.0'
+}
+
+test.enabled = false
+
 sourceSets {
    main {
       java {

@@ -2,3 +2,6 @@
 /rabbit/*.iml
 /rabbit/rabbit-boot/*.iml
 /rabbit/rabbit-boot/target
+/observer/.idea
+/observer/*.iml
+/observer/target

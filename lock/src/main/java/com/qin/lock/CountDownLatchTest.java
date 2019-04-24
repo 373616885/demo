@@ -11,7 +11,7 @@ public class CountDownLatchTest {
 
     @SneakyThrows
     public static void main(String[] args) {
-        int N = 1000;
+        int N = 10;
         CountDownLatch startSignal = new CountDownLatch(1);
         CountDownLatch doneSignal = new CountDownLatch(N);
 
@@ -20,10 +20,15 @@ public class CountDownLatchTest {
         }
 
 
-        //doSomethingElse();            // don't let run yet
+        doSomethingElse();            // don't let run yet
         startSignal.countDown();      // let all threads proceed
-        //doSomethingElse();
+        doSomethingElse();
         doneSignal.await();           // wait for all to finish
+    }
+
+    @SneakyThrows
+    private static void doSomethingElse() {
+        Thread.sleep(5000);
     }
 
 

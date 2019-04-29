@@ -1,4 +1,4 @@
-git clone https://github.com/373616885/demo.git
+锘縢it clone https://github.com/373616885/demo.git
 git add .  
-git commit  -m  "提交信息"  qin
+git commit  -m  "鎻愪氦淇℃伅"  qin
 git push -u origin master

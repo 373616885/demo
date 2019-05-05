@@ -2,6 +2,7 @@ package com.jdk.proxy;
 
 public interface Subject {
 
-	void say();
-	
+	void sayHello();
+
+	void sayHi();
 }

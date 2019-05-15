@@ -9,11 +9,14 @@ group = 'com.gradle'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
 
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
 }
+
+sourceSets.main.resources.srcDirs = ["src/main/java","src/main/resources"]
 
 repositories {
     mavenCentral()
@@ -24,6 +27,7 @@ dependencies {
         exclude group:'org.springframework.boot',
                 module:'spring-boot-starter-tomcat'
     })
+    //implementation ('org.springframework.boot:spring-boot-starter-web')
     //implementation 'org.springframework.boot:spring-boot-starter-jetty'
     implementation 'org.springframework.boot:spring-boot-starter-undertow'
     // https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter

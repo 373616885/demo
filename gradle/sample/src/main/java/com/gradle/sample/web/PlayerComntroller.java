@@ -19,7 +19,6 @@ public class PlayerComntroller {
 
     @RequestMapping("/insert")
     public String insertPlayer(){
-        log.warn("==== statr ===");
         Player player = new Player();
         player.setUid("4");
         player.setName("qin");

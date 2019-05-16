@@ -1,0 +1,44 @@
+plugins {
+    id 'org.springframework.boot' version '2.1.4.RELEASE'
+    id 'java'
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.gradle'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+sourceSets.main.resources.srcDirs = ["src/main/java","src/main/resources"]
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation ('org.springframework.boot:spring-boot-starter-web',{
+        exclude group:'org.springframework.boot',
+                module:'spring-boot-starter-tomcat'
+    })
+    //implementation ('org.springframework.boot:spring-boot-starter-web')
+    //implementation 'org.springframework.boot:spring-boot-starter-jetty'
+    implementation 'org.springframework.boot:spring-boot-starter-undertow'
+    // https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter
+    implementation group: 'org.mybatis.spring.boot', name: 'mybatis-spring-boot-starter', version: '2.0.1'
+    // https://mvnrepository.com/artifact/mysql/mysql-connector-java
+    implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.16'
+    // https://mvnrepository.com/artifact/p6spy/p6spy
+    implementation group: 'p6spy', name: 'p6spy', version: '3.8.2'
+
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}

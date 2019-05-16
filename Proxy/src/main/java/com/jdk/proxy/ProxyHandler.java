@@ -24,6 +24,7 @@ public class ProxyHandler implements InvocationHandler {
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		System.out.println("之前处理");
+		// method 通过接口反射得到得方法
 		Object result = method.invoke(obj, args);
 		System.out.println("之后处理");
 		return result;

@@ -23,8 +23,8 @@ public class Client {
 		Subject subject = (Subject) Proxy.newProxyInstance(handler.getClass().getClassLoader(),
 				realSubject.getClass().getInterfaces(), handler);
 		System.out.println(subject.getClass().getName());
-		subject.say();
-
+		subject.sayHi();
+		subject.sayHello();
 		// write proxySubject class binary data to file
 		createProxyClassFile();
 

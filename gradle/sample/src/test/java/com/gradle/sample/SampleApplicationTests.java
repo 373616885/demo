@@ -20,7 +20,7 @@ public class SampleApplicationTests {
         Player player = new Player();
         player.setUid("4");
         player.setName("qin");
-        playerService.insertPlayer(player);
+        playerService.insert(player);
     }
 
 }

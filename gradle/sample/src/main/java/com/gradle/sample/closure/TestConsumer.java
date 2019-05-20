@@ -39,8 +39,5 @@ public class TestConsumer {
         Convert<String,Integer> toIntc= new DoubleColon()::toInt;
         int ic = toIntFunction.apply(new DoubleColon(),"toInt");
 
-        // 非静态方法的第一个参数为被调用的对象，后面是入参。静态方法因为jvm已有对象，直接接收入参。
-        ConsumberInvokevirtual<DoubleColon> consumberInvokevirtual = DoubleColon::toUpper;
-        toUpperConsumer.accept(new DoubleColon());
     }
 }

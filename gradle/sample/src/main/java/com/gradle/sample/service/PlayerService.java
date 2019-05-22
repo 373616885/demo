@@ -5,7 +5,6 @@ import com.gradle.sample.mybatis.model.Player;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @Author qinjp
@@ -19,19 +18,18 @@ public class PlayerService {
     @Autowired
     PlayerMapper playerMapper;
 
-    @Transactional(rollbackFor = Exception.class)
-    void insertPlayer(Player player){
-        playerMapper.deleteByPrimaryKey(player.getUid());
+    //@Transactional(rollbackFor = Exception.class)
+    public void insertPlayer(Player player){
         playerMapper.insert(player);
     }
 
-    @Transactional
-    public void println() {
-        System.out.println("1");
-    }
 
-    public void insert(Player player) {
+
+    //@Transactional(rollbackFor = Exception.class)
+    public void deletePlayer(Player player) {
+        System.out.println("deletePlayer start");
+        playerMapper.deleteByPrimaryKey(player.getUid());
         applicationContext.getBean(PlayerService.class).insertPlayer(player);
+        System.out.println("deletePlayer end");
     }
-
 }

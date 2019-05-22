@@ -21,12 +21,24 @@ public class PlayerComntroller {
     @Autowired
     PlayerService playerService;
 
+    @Autowired
+    PlayerProtected playerProtected;
+
     @RequestMapping("/insert")
     public String insertPlayer(){
         Player player = new Player();
         player.setUid("4");
         player.setName("qin");
-        playerService.insert(player);
+        playerService.deletePlayer(player);
+        return "success";
+    }
+
+    @RequestMapping("/protected")
+    public String protectedPlayer(){
+        Player player = new Player();
+        player.setUid("5");
+        player.setName("jie");
+        playerProtected.deletePlayer(player);
         return "success";
     }
 }

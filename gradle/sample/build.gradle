@@ -37,6 +37,7 @@ dependencies {
     // https://mvnrepository.com/artifact/p6spy/p6spy
     implementation group: 'p6spy', name: 'p6spy', version: '3.8.2'
 
+    implementation group: 'com.alibaba', name: 'fastjson', version: '1.2.44'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

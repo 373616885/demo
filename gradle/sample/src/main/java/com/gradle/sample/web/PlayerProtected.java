@@ -5,6 +5,7 @@ import com.gradle.sample.mybatis.model.Player;
 import com.gradle.sample.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +22,14 @@ public class PlayerProtected {
     @Autowired
     PlayerMapper playerMapper;
 
-
-    @Transactional(rollbackFor = Exception.class)
-    protected void deletePlayer(Player player) {
+    @Async
+    //@Transactional(rollbackFor = Exception.class)
+    void deletePlayer(Player player) {
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         System.out.println("protected deletePlayer start");
         playerMapper.deleteByPrimaryKey(player.getUid());
         applicationContext.getBean(PlayerService.class).insertPlayer(player);

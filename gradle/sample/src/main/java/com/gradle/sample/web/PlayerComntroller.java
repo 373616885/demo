@@ -39,6 +39,6 @@ public class PlayerComntroller {
         player.setUid("5");
         player.setName("jie");
         playerProtected.deletePlayer(player);
-        return "success";
+        return "protected";
     }
 }

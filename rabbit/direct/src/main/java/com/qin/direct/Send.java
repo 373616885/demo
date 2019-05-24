@@ -37,9 +37,19 @@ public class Send {
      */
     public void send(String msg) {
 
-        // pub message是没有ack的 只有消费端才有
+        //若使用confirm-callback或return-callback，必须要配置publisherConfirms或publisherReturns为true
+        //每个rabbitTemplate只能有一个confirm-callback和return-callback
+        //要能想每个rabbitTemplate能有不用confirm-callback就必须多例
 
+        //使用return-callback时必须设置mandatory为true，或者在配置中设置mandatory-expression的值为true，
+        //可针对每次请求的消息去确定’mandatory’的boolean值，只能在提供’return -callback’时使用，与mandatory互斥。
+
+        // pub message是没有ack的 只有消费端才有
+        // 生产端发布 message是没有ack的 只有消费端才有
+
+        // 如果有回调一定会触发
         rabbitTemplate.setMandatory(true);
+
         rabbitTemplate.setConfirmCallback(publisherConfirmCallBack);
         rabbitTemplate.setReturnCallback(publisherReturnCallback);
 
@@ -49,7 +59,7 @@ public class Send {
 //        MessageProperties a = new MessageProperties();
 //        a.setDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);//持久化
 //        Message message = new Message("你好， qinjp!".getBytes(), new MessageProperties());
-        rabbitTemplate.convertAndSend("direct_exchange","bind",msg,correlationData);
+        rabbitTemplate.convertAndSend("direct_exchange","bind",true,correlationData);
 //        rabbitTemplate.convertAndSend("direct-queue", "你好", msg -> {
 //            msg.getMessageProperties().setDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
 //            //每条消息的存活时间--与 x-message-ttl 类似，区别这只对单条消息有效

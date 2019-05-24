@@ -47,7 +47,7 @@ public class Receive {
 //        });
         //System.out.println(" deliveryTagId : " + deliveryTag);
         System.out.println("Received D:" + message);
-        int a =1/0;
+        //int a =1/0;
         // AmqpRejectAndDontRequeueException
         //  这个异常不会重新发送回来
         //  如果有dead-letter queue被设置的话该消息就会被置入, 否则被丢弃

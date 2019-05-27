@@ -37,7 +37,7 @@ public class Receive {
         System.out.println("Receive C:" + str);
     }
 
-    @RabbitListener(queues = "direct-queue")    //监听器监听指定的Queue
+    @RabbitListener(queues = "direct-queue-qin")    //监听器监听指定的Queue
     public void processD(@Payload String message,
                          @Headers Map<String, Object> map,
                          @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,

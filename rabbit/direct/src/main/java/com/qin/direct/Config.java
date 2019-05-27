@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * @Author qinjp
  **/
-@Configuration
+//@Configuration
 public class Config {
 
 

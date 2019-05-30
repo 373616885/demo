@@ -29,7 +29,7 @@ public class PlayerComntroller {
         Player player = new Player();
         player.setUid("4");
         player.setName("qin");
-        playerService.deletePlayer(player);
+        playerService.insertPlayer(player);
         return "success";
     }
 

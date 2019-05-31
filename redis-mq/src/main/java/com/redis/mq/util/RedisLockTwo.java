@@ -77,7 +77,7 @@ public class RedisLockTwo {
     /**
      * 释放分布式锁
      */
-    public static boolean unLock(Jedis jedis, String key, String value) {
+    public static boolean unLock(Jedis jedis, String key) {
 
         String uuid = local.get();
 
@@ -89,6 +89,18 @@ public class RedisLockTwo {
             return true;
         }
         return false;
+    }
+
+
+    public static void main(String[] args) {
+        Jedis jedis = new Jedis("localhost");
+
+        final String LOCK_KEY = "LOCK_KEY";
+
+        RedisLockTwo.lock(jedis,LOCK_KEY,5000);
+
+        RedisLockTwo.unLock(jedis,LOCK_KEY);
+
     }
 
 }

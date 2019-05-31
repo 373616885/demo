@@ -30,7 +30,7 @@ public class ResponseResultInterceptor implements HandlerInterceptor {
     /**
      * 缓存
      **/
-    private static Map<String, Annotation> responseResultCache = Maps.newConcurrentMap();
+    private static final Map<String, Annotation> responseResultCache = Maps.newConcurrentMap();
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {

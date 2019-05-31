@@ -16,16 +16,16 @@ public class Application {
 		// 生产和消费模式
 		// 用lpush 和 brpop就可以
 		// 对应的
-		String key = "key-1";
-		String value = "value-1";
-		StringRedisTemplate stringRedisTemplate = cxt.getBean(StringRedisTemplate.class);
-		stringRedisTemplate.boundListOps(key).leftPush(value);
-		while (true) {
-			System.out.println("key-1");
-			// 0 无限阻塞直到有数据为止
-			String result = stringRedisTemplate.boundListOps(key).rightPop(0, TimeUnit.SECONDS);
-			System.out.println(result);
-		}
+//		String key = "key-1";
+//		String value = "value-1";
+//		StringRedisTemplate stringRedisTemplate = cxt.getBean(StringRedisTemplate.class);
+//		stringRedisTemplate.boundListOps(key).leftPush(value);
+//		while (true) {
+//			System.out.println("key-1");
+//			// 0 无限阻塞直到有数据为止
+//			String result = stringRedisTemplate.boundListOps(key).rightPop(0, TimeUnit.SECONDS);
+//			System.out.println(result);
+//		}
 	}
 
 }

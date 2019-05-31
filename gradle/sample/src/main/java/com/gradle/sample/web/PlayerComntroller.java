@@ -22,7 +22,9 @@ public class PlayerComntroller {
     PlayerService playerService;
 
     @Autowired
-    PlayerProtected playerProtected;
+    private PlayerProtected playerProtected;
+
+    private static final String SUCCESS = "SUCCESS";
 
     @RequestMapping("/insert")
     public String insertPlayer(){
@@ -30,7 +32,7 @@ public class PlayerComntroller {
         player.setUid("4");
         player.setName("qin");
         playerService.insertPlayer(player);
-        return "success";
+        return SUCCESS;
     }
 
     @RequestMapping("/protected")

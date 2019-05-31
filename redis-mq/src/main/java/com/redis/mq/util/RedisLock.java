@@ -60,6 +60,9 @@ public class RedisLock {
 
 
     private static final String LOCK_SUCCESS = "OK";
+    /**
+     * 表示 NX 模式
+     */
     private static final String SET_IF_NOT_EXIST = "NX";
     /**
      * 单位 毫秒
@@ -73,6 +76,8 @@ public class RedisLock {
 
     // jedis 客户端的
     public boolean tryGetDistributedLock(Jedis jedis, String lockKey, String requestId, int expireTime) {
+
+        jedis = new Jedis("localhost");
 
         String result = jedis.set(lockKey, requestId, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME_EX, expireTime);
 

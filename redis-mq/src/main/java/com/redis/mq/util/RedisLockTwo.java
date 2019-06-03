@@ -4,8 +4,6 @@ import redis.clients.jedis.Jedis;
 
 import java.util.Collections;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @author qinjp

@@ -81,6 +81,12 @@ public class RedisLockTwo {
 
         String uuid = local.get();
 
+        //当前线程没有绑定uuid
+        //直接返回
+        if (uuid == null || "".equals(uuid)) {
+            return false;
+        }
+
         Object result = jedis.eval(SCRIPT, Collections.singletonList(key), Collections.singletonList(uuid));
 
         if (Long.valueOf(1).equals(result)) {
@@ -93,14 +99,14 @@ public class RedisLockTwo {
 
 
     public static void main(String[] args) {
-        Jedis jedis = new Jedis("47.100.185.77",6379);
+        Jedis jedis = new Jedis("47.100.185.77", 6379);
         jedis.auth("373616885");
         jedis.select(0);
         final String LOCK_KEY = "LOCK_KEY";
 
-        RedisLockTwo.lock(jedis,LOCK_KEY,50000000);
+        RedisLockTwo.lock(jedis, LOCK_KEY, 50000000);
 
-        RedisLockTwo.unLock(jedis,LOCK_KEY);
+        RedisLockTwo.unLock(jedis, LOCK_KEY);
 
     }
 

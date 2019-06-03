@@ -54,7 +54,7 @@ public class RedisLockTwo {
     /**
      * 存储随机数
      **/
-    private static final ThreadLocal<String> local = new ThreadLocal<>();
+    private static final ThreadLocal<String> LOCAL = new ThreadLocal<>();
 
     /**
      * 加锁
@@ -67,7 +67,7 @@ public class RedisLockTwo {
 
         if (LOCK_SUCCESS.equals(result)) {
             // 随机数绑定线程
-            local.set(uuid);
+            LOCAL.set(uuid);
             return true;
         }
         return false;
@@ -79,7 +79,7 @@ public class RedisLockTwo {
      */
     public static boolean unLock(Jedis jedis, String key) {
 
-        String uuid = local.get();
+        String uuid = LOCAL.get();
 
         //当前线程没有绑定uuid
         //直接返回
@@ -91,7 +91,7 @@ public class RedisLockTwo {
 
         if (Long.valueOf(1).equals(result)) {
             // 解除绑定线程的随机数
-            local.remove();
+            LOCAL.remove();
             return true;
         }
         return false;

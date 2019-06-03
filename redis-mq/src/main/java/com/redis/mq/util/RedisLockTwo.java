@@ -83,7 +83,7 @@ public class RedisLockTwo {
 
         Object result = jedis.eval(SCRIPT, Collections.singletonList(key), Collections.singletonList(uuid));
 
-        if (LOCK_SUCCESS.equals(result)) {
+        if (Long.valueOf(1).equals(result)) {
             // 解除绑定线程的随机数
             local.remove();
             return true;
@@ -93,11 +93,12 @@ public class RedisLockTwo {
 
 
     public static void main(String[] args) {
-        Jedis jedis = new Jedis("localhost");
-
+        Jedis jedis = new Jedis("47.100.185.77",6379);
+        jedis.auth("373616885");
+        jedis.select(0);
         final String LOCK_KEY = "LOCK_KEY";
 
-        RedisLockTwo.lock(jedis,LOCK_KEY,5000);
+        RedisLockTwo.lock(jedis,LOCK_KEY,50000000);
 
         RedisLockTwo.unLock(jedis,LOCK_KEY);
 

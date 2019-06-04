@@ -11,11 +11,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class ApplicationTests {
 
 	@Autowired
-	StringService stringService;
+	OpsForSet stringService;
 
 	@Test
 	public void contextLoads() {
-		stringService.setBit();
+		stringService.opsSet();
 
 	}
 

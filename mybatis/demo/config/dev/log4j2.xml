@@ -6,9 +6,9 @@ monitorInterval : 用于指定log4j自动重新配置的监测间隔时间，单
 <Configuration status="WARN" monitorInterval="30">
     <Properties>
         <!-- 配置日志文件输出目录 ${sys:user.home} -->
-        <Property name="LOG_HOME">logs/group</Property>
-        <property name="ERROR_LOG_FILE_NAME">logs/group/error</property>
-        <property name="WARN_LOG_FILE_NAME">logs/group/warn</property>
+        <Property name="LOG_HOME">logs/demo</Property>
+        <property name="ERROR_LOG_FILE_NAME">logs/demo/error</property>
+        <property name="WARN_LOG_FILE_NAME">logs/demo/warn</property>
         <property name="PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t-%L] %-5level %logger{36} - %msg%n</property>
     </Properties>
 

@@ -2,6 +2,7 @@ package com.qin.mybatis.demo.web;
 
 import com.qin.mybatis.demo.mybatis.entity.Player;
 import com.qin.mybatis.demo.service.PlayerService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class SampleController {
 
+    @Autowired
     private PlayerService playerService;
 
     @RequestMapping("/sample")

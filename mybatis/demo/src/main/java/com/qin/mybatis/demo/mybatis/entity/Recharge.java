@@ -70,4 +70,17 @@ public class Recharge {
     public void setTime(Integer time) {
         this.time = time;
     }
+
+    @Override
+    public String toString() {
+        return "Recharge{" +
+                "id=" + id +
+                ", uid='" + uid + '\'' +
+                ", orderid='" + orderid + '\'' +
+                ", customid='" + customid + '\'' +
+                ", pay=" + pay +
+                ", cfgid=" + cfgid +
+                ", time=" + time +
+                '}';
+    }
 }

@@ -14,6 +14,7 @@ public class SampleService {
     @Autowired
     private PlayerService playerService;
 
+
     public String sample(){
         Player player = new Player();
         player.setUid("5");

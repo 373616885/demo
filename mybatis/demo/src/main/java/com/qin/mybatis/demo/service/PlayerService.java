@@ -19,8 +19,8 @@ public class PlayerService {
     @Autowired
     PlayerMapper playerMapper;
 
-    @Transactional(rollbackFor = Exception.class)
-    public void insertPlayer(Player player){
+    //@Transactional(rollbackFor = Exception.class)
+    void insertPlayer(Player player){
         playerMapper.deleteByPrimaryKey(player.getUid());
         playerMapper.insert(player);
     }

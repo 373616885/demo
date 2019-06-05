@@ -1,7 +1,10 @@
 package com.qin.mybatis.demo;
 
+import com.qin.mybatis.demo.mybatis.entity.Player;
+import com.qin.mybatis.demo.service.PlayerService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -9,8 +12,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class DemoApplicationTests {
 
+    @Autowired
+    PlayerService playerService;
+
     @Test
     public void contextLoads() {
+        Player player = new Player();
+        player.setUid("4");
+        player.setName("qin");
+        playerService.insertPlayer(player);
     }
 
 }

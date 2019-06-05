@@ -19,11 +19,11 @@
         from t_player
         where uid = #{uid,jdbcType=VARCHAR}
     </delete>
-    <insert id="insert" parameterType="com.gradle.sample.mybatis.model.Player">
+    <insert id="insert" parameterType="com.qin.mybatis.demo.mybatis.entity.Player">
         insert into t_player (uid, name)
         values (#{uid,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR})
     </insert>
-    <insert id="insertSelective" parameterType="com.gradle.sample.mybatis.model.Player">
+    <insert id="insertSelective" parameterType="com.qin.mybatis.demo.mybatis.entity.Player">
         insert into t_player
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="uid != null">
@@ -42,7 +42,7 @@
             </if>
         </trim>
     </insert>
-    <update id="updateByPrimaryKeySelective" parameterType="com.gradle.sample.mybatis.model.Player">
+    <update id="updateByPrimaryKeySelective" parameterType="com.qin.mybatis.demo.mybatis.entity.Player">
         update t_player
         <set>
             <if test="name != null">
@@ -51,7 +51,7 @@
         </set>
         where uid = #{uid,jdbcType=VARCHAR}
     </update>
-    <update id="updateByPrimaryKey" parameterType="com.gradle.sample.mybatis.model.Player">
+    <update id="updateByPrimaryKey" parameterType="com.qin.mybatis.demo.mybatis.entity.Player">
         update t_player
         set name = #{name,jdbcType=VARCHAR}
         where uid = #{uid,jdbcType=VARCHAR}

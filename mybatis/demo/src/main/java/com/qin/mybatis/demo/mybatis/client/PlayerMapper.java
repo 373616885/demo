@@ -1,6 +1,6 @@
 package com.qin.mybatis.demo.mybatis.client;
 
-import com.gradle.sample.mybatis.model.Player;
+import com.qin.mybatis.demo.mybatis.entity.Player;
 
 public interface PlayerMapper {
     int deleteByPrimaryKey(String uid);

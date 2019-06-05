@@ -1,4 +1,4 @@
-package com.qin.mybatis.demo.mybatis.model;
+package com.qin.mybatis.demo.mybatis.entity;
 
 public class Player {
     private String uid;

@@ -15,4 +15,6 @@ public interface PlayerMapper {
     int updateByPrimaryKeySelective(Player record);
 
     int updateByPrimaryKey(Player record);
+
+    Player selectByUidAndName(String uid, String name);
 }

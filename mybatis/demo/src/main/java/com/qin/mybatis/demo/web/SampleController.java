@@ -25,7 +25,7 @@ public class SampleController {
         Player player = new Player();
         player.setUid("5");
         player.setName("jie");
-        sampleService.sample();
+        playerService.insertPlayer(player);
         return "success";
     }
 }

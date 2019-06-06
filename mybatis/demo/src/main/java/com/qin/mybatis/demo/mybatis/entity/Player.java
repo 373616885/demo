@@ -20,4 +20,12 @@ public class Player {
     public void setName(String name) {
         this.name = name == null ? null : name.trim();
     }
+
+    @Override
+    public String toString() {
+        return "Player{" +
+                "uid='" + uid + '\'' +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

@@ -9,10 +9,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
+
 /**
  * @Author qinjp
  **/
 @Service
+//@Transactional(rollbackFor = Exception.class)
 public class PlayerService {
 
     @Autowired
@@ -24,10 +27,11 @@ public class PlayerService {
     @Autowired
     RechargeMapper rechargeMapper;
 
-    //@Transactional(rollbackFor = Exception.class)
-    void insertPlayer(Player player){
-        Recharge recharge = rechargeMapper.selectByPrimaryKey(1);
-        System.out.println(recharge.toString());
+    public void insertPlayer(Player player){
+        Player recharge = playerMapper.selectByUidAndName(player.getUid(),player.getName());
+        if (Objects.nonNull(recharge)) {
+            System.out.println(recharge.toString());
+        }
         playerMapper.deleteByPrimaryKey(player.getUid());
         playerMapper.insert(player);
     }

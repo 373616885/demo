@@ -5,9 +5,8 @@ import com.qin.result.base.BizException;
 import com.qin.result.common.ResponseResult;
 import com.qin.result.model.Dog;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Map;
@@ -35,16 +34,31 @@ public class ResultController {
     public Dog getDog(@PathVariable("name") String name) {
         for (Map.Entry<Integer, Dog> entry : dogs.entrySet()) {
             Dog dog = entry.getValue();
-            if (StringUtils.equals(dog.getName(),name)) {
-                return dog;
-            }
+//            if (StringUtils.equals(dog.getName(), name)) {
+//                return dog;
+//            }
         }
         throw new BizException("that dog non existent");
     }
 
+    /**
+     * @RequestBody 只支持 post 和 json
+     */
     @ResponseResult
-    @RequestMapping("add/dog")
-    public void addDog(@Valid Dog dog) {
+    @RequestMapping(value = "insert/dog")
+    public void insert(@Valid Dog dog) {
+        if (dogs.containsKey(dog.getId())) {
+            throw new BizException("已存在不可添加");
+        }
+        dogs.put(dog.getId(), dog);
+    }
+
+    /**
+     * @RequestBody 只支持 post 和 json
+     */
+    @ResponseResult
+    @PostMapping(value = "add/dog", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void addDog(@Valid @RequestBody Dog dog, @RequestParam("token") String token) {
         if (dogs.containsKey(dog.getId())) {
             throw new BizException("已存在不可添加");
         }

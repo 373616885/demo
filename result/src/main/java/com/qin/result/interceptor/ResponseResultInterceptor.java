@@ -53,6 +53,7 @@ public class ResponseResultInterceptor implements HandlerInterceptor {
         log.info("port : {}", request.getLocalPort());
         log.info("referer : {}", request.getHeader("referer"));
         log.info("url : {}", request.getRequestURL().toString());
+        log.info("Content-Type : {}", request.getHeader("Content-Type"));
         // 请求参数
         Enumeration<String> em = request.getParameterNames();
         while (em.hasMoreElements()) {

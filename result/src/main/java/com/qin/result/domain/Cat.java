@@ -15,10 +15,10 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class Cat {
 
-    @NotNull(message = "id is null")
+    @NotNull(message = "cat id is null")
     private Integer id;
 
-    @NotEmpty(message = "name is empty")
+    @NotEmpty(message = "cat name is empty")
     private String name;
 
 }

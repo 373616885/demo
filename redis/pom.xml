@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 
 	<name>redis</name>
-	<description>Redis简单实现消息服务器</description>
+	<description>Redis</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>

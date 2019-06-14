@@ -47,6 +47,19 @@ public class RedisLock {
         });
     }
 
+    private Boolean setIfAbsent(final String key, final Serializable value, final long exptime) {
+        return stringRedisTemplate.execute((RedisConnection connection) -> {
+            RedisSerializer valueSerializer = redisTemplate.getValueSerializer();
+            RedisSerializer keySerializer = redisTemplate.getKeySerializer();
+            Object obj = connection.execute("set", keySerializer.serialize(key),
+                    valueSerializer.serialize(value),
+                    "NX".getBytes(StandardCharsets.UTF_8),
+                    "EX".getBytes(StandardCharsets.UTF_8),
+                    String.valueOf(exptime).getBytes(StandardCharsets.UTF_8));
+            return obj != null;
+        });
+    }
+
     /**
      * spring boot 2 版本 redisTemplate.opsForValue().setIfAbsent 可以设置时间
      */

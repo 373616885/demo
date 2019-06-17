@@ -31,6 +31,8 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
         if (Objects.nonNull(attributes)) {
             return attributes.getAttribute(RESPONSE_RESULT, RequestAttributes.SCOPE_REQUEST) != null;
         }
+
+        // Result.class.isAssignableFrom(returnType.getParameterType());
         return false;
     }
 

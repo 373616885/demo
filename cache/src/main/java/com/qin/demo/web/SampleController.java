@@ -2,7 +2,7 @@ package com.qin.demo.web;
 
 import com.qin.demo.service.SampleService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,12 +18,8 @@ public class SampleController {
     @Autowired
     private HttpSession session;
 
-    @Autowired
-    private StringRedisTemplate stringRedisTemplate;
-
     @GetMapping("request/safe")
     public String requestSafe(HttpServletRequest req) {
-        stringRedisTemplate.opsForValue().set("qin", "373616885");
         System.out.println(req.getClass().getName());
         System.out.println(req.getParameter("name"));
         System.out.println(request.getClass().getName());

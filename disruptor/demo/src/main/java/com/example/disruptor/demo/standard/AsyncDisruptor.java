@@ -46,7 +46,7 @@ public abstract class AsyncDisruptor<T> {
     private volatile Disruptor<T> disruptor;
 
     public synchronized void start() {
-        start("BLOCK");
+        start("SLEEP");
     }
 
     private synchronized void start(final String strategyUp) {
@@ -86,6 +86,10 @@ public abstract class AsyncDisruptor<T> {
 
     private static final int MAX_DRAIN_ATTEMPTS_BEFORE_SHUTDOWN = 200;
     private static final int SLEEP_MILLIS_BETWEEN_DRAIN_ATTEMPTS = 50;
+
+    public void stop() {
+        disruptor.shutdown();
+    }
 
     public boolean stop(final long timeout, final TimeUnit timeUnit) {
         final Disruptor<T> temp = disruptor;

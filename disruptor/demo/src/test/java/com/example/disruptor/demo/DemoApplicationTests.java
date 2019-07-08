@@ -1,7 +1,9 @@
 package com.example.disruptor.demo;
 
+import com.example.disruptor.demo.spring.NotifyService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -9,8 +11,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class DemoApplicationTests {
 
+    @Autowired
+    NotifyService notifyService;
+
     @Test
     public void contextLoads() {
+
+        notifyService.sendNotify("qinjiepeng");
+
     }
 
 }

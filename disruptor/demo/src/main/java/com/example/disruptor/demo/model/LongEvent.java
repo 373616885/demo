@@ -15,5 +15,6 @@ public class LongEvent {
 
     private Long value;
     private int data;
+    private String msg;
 
 }

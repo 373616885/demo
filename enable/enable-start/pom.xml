@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.qin</groupId>
-    <artifactId>enable-start</artifactId>
+    <artifactId>start-enable</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>enable-start</name>
     <description>Demo project for Spring Boot</description>
@@ -14,7 +14,11 @@
     </properties>
 
     <dependencies>
-
+        <dependency>
+            <groupId>com.qin</groupId>
+            <artifactId>enable-start-phone</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 

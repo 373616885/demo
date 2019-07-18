@@ -125,6 +125,7 @@
             <!--Java8 的反射中添加了 Parameter 类，让我们能在程序运行期间通过反射获取到方法参数信息，包括参数名-->
             <!-- 但是需要在程序编译的时候添加 -parameters 参数-->
             <!-- 添加 maven-compiler-plugin 插件，并且将 parameters 设置为 true 即可-->
+			<!-- If you are using AspectJ in your project, you need to make sure that the annotation processor runs only once <proc>none</proc>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -134,6 +135,7 @@
                     <target>${java.version}</target>
                     <parameters>true</parameters>
                     <encoding>UTF-8</encoding>
+					<proc>none</proc>
                 </configuration>
             </plugin>
         </plugins>

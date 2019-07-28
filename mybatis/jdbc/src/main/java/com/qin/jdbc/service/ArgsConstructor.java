@@ -10,7 +10,7 @@ public class ArgsConstructor {
 
     private final SampleService sampleService;
 
-    public String args(){
+    public String args() {
         return sampleService.sample();
     }
 }

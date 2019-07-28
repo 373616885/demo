@@ -12,7 +12,7 @@ public class SampleController {
     ArgsConstructor argsConstructor;
 
     @GetMapping("/sample")
-    public String init(){
+    public String init() {
         return argsConstructor.args();
     }
 }

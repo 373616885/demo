@@ -1,35 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE generatorConfiguration
-  PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
-  "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
 <generatorConfiguration>
-    <!--Êý¾Ý¿âÇý¶¯-->
-    <classPathEntry    location="mysql-connector-java-5.1.47.jar"/>
-    <context id="MySqlTables"  targetRuntime="MyBatis3">
+    <!--ï¿½ï¿½ï¿½Ý¿ï¿½ï¿½ï¿½ï¿½ï¿½-->
+    <classPathEntry location="mysql-connector-java-5.1.47.jar"/>
+    <context id="MySqlTables" targetRuntime="MyBatis3">
         <commentGenerator>
             <property name="suppressDate" value="true"/>
             <property name="suppressAllComments" value="true"/>
         </commentGenerator>
-        <!--Êý¾Ý¿âÁ´½ÓµØÖ·ÕËºÅÃÜÂë-->
-        <jdbcConnection driverClass="com.mysql.jdbc.Driver" connectionURL="jdbc:mysql://47.100.185.77:3306/qin?characterEncoding=UTF-8&amp;useSSL=false&amp;serverTimezone=GMT%2B8" userId="root" password="373616885">
+        <!--ï¿½ï¿½ï¿½Ý¿ï¿½ï¿½ï¿½ï¿½Óµï¿½Ö·ï¿½Ëºï¿½ï¿½ï¿½ï¿½ï¿½-->
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://47.100.185.77:3306/qin?characterEncoding=UTF-8&amp;useSSL=false&amp;serverTimezone=GMT%2B8"
+                        userId="root" password="373616885">
         </jdbcConnection>
         <javaTypeResolver>
             <property name="forceBigDecimals" value="false"/>
         </javaTypeResolver>
-        <!--Éú³ÉModelÀà´æ·ÅÎ»ÖÃ-->
+        <!--ï¿½ï¿½ï¿½ï¿½Modelï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½-->
         <javaModelGenerator targetPackage="com.qin.mybatis.demo.mybatis.entity" targetProject="src">
             <property name="enableSubPackages" value="true"/>
             <property name="trimStrings" value="true"/>
         </javaModelGenerator>
-        <!--Éú³ÉÓ³ÉäÎÄ¼þ´æ·ÅÎ»ÖÃ-->
+        <!--ï¿½ï¿½ï¿½ï¿½Ó³ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½-->
         <sqlMapGenerator targetPackage="com.qin.mybatis.demo.mybatis.mapper" targetProject="src">
             <property name="enableSubPackages" value="true"/>
         </sqlMapGenerator>
-        <!--Éú³ÉDaoÀà´æ·ÅÎ»ÖÃ-->
+        <!--ï¿½ï¿½ï¿½ï¿½Daoï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½-->
         <javaClientGenerator type="XMLMAPPER" targetPackage="com.qin.mybatis.demo.mybatis.client" targetProject="src">
             <property name="enableSubPackages" value="true"/>
         </javaClientGenerator>
-        <!--Éú³É¶ÔÓ¦±í¼°ÀàÃû-->
-        <table tableName="t_recharge" domainObjectName="Recharge" enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false" selectByExampleQueryId="false"></table>
+        <!--ï¿½ï¿½ï¿½É¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½-->
+        <table tableName="t_recharge" domainObjectName="Recharge" enableCountByExample="false"
+               enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"
+               selectByExampleQueryId="false"></table>
     </context>
 </generatorConfiguration>

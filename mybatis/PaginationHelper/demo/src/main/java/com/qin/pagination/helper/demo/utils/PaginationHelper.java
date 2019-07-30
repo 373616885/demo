@@ -8,6 +8,7 @@ import java.util.List;
 
 /**
  * 分页辅助类
+ *
  * @author qinjp
  * @date 2010-5-6
  */

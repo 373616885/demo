@@ -57,11 +57,11 @@
         where uid = #{uid,jdbcType=VARCHAR}
     </update>
 
-    <select id="selectByUidAndName"  resultMap="BaseResultMap">
+    <select id="selectByUidAndName" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
         from t_player
         where uid = #{uid,jdbcType=VARCHAR}
-            and name = #{name,jdbcType=VARCHAR}
+        and name = #{name,jdbcType=VARCHAR}
     </select>
 </mapper>

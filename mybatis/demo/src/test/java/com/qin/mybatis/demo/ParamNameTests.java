@@ -16,7 +16,7 @@ public class ParamNameTests {
     public static void main(String[] args) throws NoSuchMethodException {
         Class<PlayerMapper> mapper = PlayerMapper.class;
 
-        Method method = mapper.getMethod("selectByUidAndName",String.class,String.class);
+        Method method = mapper.getMethod("selectByUidAndName", String.class, String.class);
 
         Parameter[] parameters = method.getParameters();
 

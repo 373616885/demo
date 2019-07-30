@@ -27,8 +27,8 @@ public class PlayerService {
     @Autowired
     RechargeMapper rechargeMapper;
 
-    public void insertPlayer(Player player){
-        Player recharge = playerMapper.selectByUidAndName(player.getUid(),player.getName());
+    public void insertPlayer(Player player) {
+        Player recharge = playerMapper.selectByUidAndName(player.getUid(), player.getName());
         if (Objects.nonNull(recharge)) {
             System.out.println(recharge.toString());
         }

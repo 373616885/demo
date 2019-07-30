@@ -21,7 +21,7 @@ public class SampleController {
 
 
     @RequestMapping("/sample")
-    public String sample(){
+    public String sample() {
         Player player = new Player();
         player.setUid("5");
         player.setName("jie");

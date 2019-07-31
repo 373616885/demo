@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qin.xml.mapper.EmployeeMapper">
+
+    <!--
+        eviction 清除策略
+        LRU – 最近最少使用：移除最长时间不被使用的对象。
+        FIFO – 先进先出：按对象进入缓存的顺序来移除它们。
+        SOFT – 软引用：基于垃圾回收器状态和软引用规则移除对象。
+        WEAK – 弱引用：更积极地基于垃圾收集器状态和弱引用规则移除对象
+
+        flushInterval（刷新间隔）属性可以被设置为任意的正整数，设置的值应该是一个以毫秒为单位的合理时间量。 默认情况是不设置，也就是没有刷新间隔，缓存仅仅会在调用语句时刷新
+        size（引用数目）属性可以被设置为任意正整数，要注意欲缓存对象的大小和运行环境中可用的内存资源。默认值是 1024
+        readOnly（只读）属性可以被设置为 true 只读的缓存会给所有调用者返回缓存对象的相同实例
+    -->
+    <cache eviction="FIFO"
+           flushInterval="60000"
+           size="512"
+           readOnly="true"/>
+
+
+    <select id="getEmpById" resultType="employee" flushCache="false" useCache="true">
+        SELECT * FROM employee WHERE id=#{id}
+    </select>
+
+    <insert id="insertEmp">
+        INSERT INTO employee(lastName,email,gender,d_id) VALUES (#{lastName},#{email},#{gender},#{dId})
+    </insert>
+</mapper>

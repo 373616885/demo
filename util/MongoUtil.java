@@ -17,7 +17,9 @@ import java.util.function.Consumer;
  **/
 public class MongoUtil {
 
-    private static final MongoClient mongoClient = MongoClients.create("mongodb://mongo:373616885@47.100.185.77:27017/mongo");
+    private static final String url = String.format("mongodb://%s:%s@%s:%d/%s", "mongo", "373616885", "47.100.185.77", 27017, "mongo");
+
+    private static final MongoClient mongoClient = MongoClients.create(url);
 
     /**
      * Access a Database

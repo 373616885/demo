@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.util.ArrayList;
 
 /**
  * @author qinjp
@@ -36,6 +37,7 @@ public class SmapleController {
         while (cursor.hasNext()) {
             cursor.next();
         }
+        new ArrayList<>().toArray();
 
         return "success";
     }

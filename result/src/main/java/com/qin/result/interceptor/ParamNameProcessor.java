@@ -26,7 +26,9 @@ public class ParamNameProcessor  extends ServletModelAttributeMethodProcessor {
     @Autowired
     private RequestMappingHandlerAdapter requestMappingHandlerAdapter;
 
-    //Rename cache
+    /**
+     * Rename cache
+     */
     private final Map<Class<?>, Map<String, String>> replaceMap = new ConcurrentHashMap<>();
 
     public ParamNameProcessor(boolean annotationNotRequired) {
@@ -35,6 +37,9 @@ public class ParamNameProcessor  extends ServletModelAttributeMethodProcessor {
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
+        // 1. 参数是否有RequestParam注解
+        // 2. 是不是简单的类型
+        // 3. 属性里面是否有RequestParam注解
         return parameter.hasParameterAnnotation(RequestParam.class)
                 && !BeanUtils.isSimpleProperty(parameter.getParameterType())
                 && Arrays.stream(parameter.getParameterType().getDeclaredFields())

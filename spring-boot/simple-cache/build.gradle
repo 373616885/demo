@@ -18,6 +18,8 @@ configurations {
     }
 }
 
+
+
 ext {
     // 运行和打包的环境选择, 默认是开发环境
     // 获取 gradle 参数中 -Dprofile 的值: gradle -Denv=production clean build
@@ -28,6 +30,14 @@ def loadConfiguration() {
     println "==> Load configuration for '" + environment + "'"
     def configFile = file('config.groovy') // 配置文件
     return new ConfigSlurper(environment).parse(configFile.toURI().toURL()).toProperties()
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDir "config/properties/${environment}"
+        }
+    }
 }
 
 processResources {

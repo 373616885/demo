@@ -35,7 +35,7 @@ def loadConfiguration() {
 sourceSets {
     main {
         resources {
-            srcDir "config/properties/${environment}"
+            srcDir "config/${environment}"
         }
     }
 }

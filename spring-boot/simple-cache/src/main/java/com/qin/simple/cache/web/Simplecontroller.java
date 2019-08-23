@@ -1,5 +1,6 @@
 package com.qin.simple.cache.web;
 
+import com.qin.simple.cache.bean.User;
 import com.qin.simple.cache.service.SimpleSerivce;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,11 +14,16 @@ public class Simplecontroller {
 
     private final SimpleSerivce simpleSerivce;
 
-    @GetMapping("/simple")
-    public String simple(){
-        String result = simpleSerivce.simple();
+    @GetMapping("/get")
+    public String get(User user){
+        String result = simpleSerivce.simple(user);
         log.warn(result);
-        return "success";
+        return result;
+    }
+
+    @GetMapping("/update")
+    public String update(User user){
+        return simpleSerivce.updateById(user);
     }
 
 }

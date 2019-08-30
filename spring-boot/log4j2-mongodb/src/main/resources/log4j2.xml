@@ -106,13 +106,13 @@ monitorInterval : 用于指定log4j自动重新配置的监测间隔时间，单
         </RollingFile>
 
         <!--<NoSql name="info-mongo" bufferSize="1" >--><!--建议bufferSize配置,减少频繁写操作。 -->
-            <!--参数分别是：数据库名，集合名，服务器ip，端口。还可以指定其他参数或升级版本，详情请看：http://logging.apache.org/log4j/2.x/manual/appenders.html#NoSQLAppender-->
-            <!--日志的数据格式无法使用 PatternLayout-->
-            <!--<MongoDb databaseName="mongo" collectionName="log"
-                         server="47.100.185.77" port="27017"
-                         username="mongo" password="373616885"/>-->
-           <!-- <ThresholdFilter level="ALL" onMatch="ACCEPT" onMismatch="DENY"/>
-        </NoSql>-->
+        <!--参数分别是：数据库名，集合名，服务器ip，端口。还可以指定其他参数或升级版本，详情请看：http://logging.apache.org/log4j/2.x/manual/appenders.html#NoSQLAppender-->
+        <!--日志的数据格式无法使用 PatternLayout-->
+        <!--<MongoDb databaseName="mongo" collectionName="log"
+                     server="47.100.185.77" port="27017"
+                     username="mongo" password="373616885"/>-->
+        <!-- <ThresholdFilter level="ALL" onMatch="ACCEPT" onMismatch="DENY"/>
+     </NoSql>-->
         <NoSql name="info-mongo" bufferSize="1">
             <MongoDb databaseName="mongo" collectionName="log"
                      server="47.100.185.77" port="27017"

@@ -8,18 +8,18 @@ import java.util.List;
 
 @Data
 public class LogMessage {
-        private ObjectId _id;
-        private String level;
-        private String loggerName;
-        private String message;
-        private String source;
-        private String marker;
-        private Long threadId;
-        private String threadName;
-        private Integer threadPriority;
-        private Long millis;
-        private Date date;
-        private String thrown;
-        private ContextMap contextMap;
-        private List<String> contextStack;
+    private ObjectId _id;
+    private String level;
+    private String loggerName;
+    private String message;
+    private String source;
+    private String marker;
+    private Long threadId;
+    private String threadName;
+    private Integer threadPriority;
+    private Long millis;
+    private Date date;
+    private String thrown;
+    private ContextMap contextMap;
+    private List<String> contextStack;
 }

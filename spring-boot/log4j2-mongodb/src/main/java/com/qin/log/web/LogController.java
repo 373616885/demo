@@ -1,5 +1,6 @@
 package com.qin.log.web;
 
+
 import com.qin.log.bean.LogMessage;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +40,7 @@ public class LogController {
                                      @RequestParam(required = false) String pattern) {
         int pageSize = 10;
 
-        Sort  sort = new Sort(Sort.Direction.ASC, "millis")
+        Sort sort = new Sort(Sort.Direction.ASC, "millis")
                 .and(new Sort(Sort.Direction.ASC, "date"));
 
         Query query = new Query();
@@ -59,11 +60,11 @@ public class LogController {
         query.limit(pageSize);
         query.with(sort);
         query.fields()
-            .include("level")
-            .include("message")
-            .include("millis")
-            .include("date");
-        return mongoTemplate.find(query, LogMessage.class,"log");
+                .include("level")
+                .include("message")
+                .include("millis")
+                .include("date");
+        return mongoTemplate.find(query, com.qin.log.bean.LogMessage.class, "log");
     }
 
 

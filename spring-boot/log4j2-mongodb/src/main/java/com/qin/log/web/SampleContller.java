@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SampleContller {
 
     @GetMapping("/sample")
-    public String sample(){
+    public String sample() {
         return "success";
     }
 

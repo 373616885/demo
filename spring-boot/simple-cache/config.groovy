@@ -1,11 +1,11 @@
 environments {
     dev {
-        profileActive="dev"
+        profileActive = "dev"
     }
     test {
-        profileActive="test"
+        profileActive = "test"
     }
     pro {
-        profileActive="pro"
+        profileActive = "pro"
     }
 }

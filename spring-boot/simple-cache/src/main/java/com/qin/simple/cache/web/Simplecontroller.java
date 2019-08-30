@@ -15,14 +15,14 @@ public class Simplecontroller {
     private final SimpleSerivce simpleSerivce;
 
     @GetMapping("/get")
-    public String get(User user){
+    public String get(User user) {
         String result = simpleSerivce.simple(user);
         log.warn(result);
         return result;
     }
 
     @GetMapping("/update")
-    public String update(User user){
+    public String update(User user) {
         return simpleSerivce.updateById(user);
     }
 

@@ -19,7 +19,6 @@ configurations {
 }
 
 
-
 ext {
     // 运行和打包的环境选择, 默认是开发环境
     // 获取 gradle 参数中 -Dprofile 的值: gradle -Denv=production clean build

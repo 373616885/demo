@@ -35,7 +35,7 @@ Arrays.asList(appFiles).forEach(System.out::println);
 
 4. 若ExtClassLoader也加载失败，则会使用AppClassLoader来加载，如果AppClassLoader也加载失败，则会报出异常ClassNotFoundException。
 
-**ClassLoader类的loadClass方法：**委托是从下向上（app--ext--boot）具体查找过程却是自上至下 findClass()
+**ClassLoader类的loadClass方法：**  委托是从下向上（app--ext--boot）具体查找过程却是自上至下 findClass()
 
    ```java
    protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {

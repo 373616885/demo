@@ -17,3 +17,4 @@
 */*/target/
 *.bak
 *.log
+/spring-boot/redis/gradle

@@ -1,6 +1,6 @@
 ### lookup-method 使用：
 
-使用lookup-method解决 **单例** 依赖 **多例** 的问题
+主要解决 **单例** 依赖 **多例** 的问题
 
 问题：
 
@@ -74,4 +74,45 @@ non-singleton-bean：指的是lookup-method中bean属性指向的必须是一个
 
 4.no-arguments不允许有参数。
 ```
+
+
+
+### replaced-method  使用：
+
+主要作用就是替换方法体及其返回值，其实现也比较简单
+
+**replace-method注入需实现MethodReplacer接口，并重写reimplement方法**
+
+```java
+public class OriginalDog {
+    public void sayHello(String name) {
+        System.out.println("Hello,I am a black dog, my name is " + name);
+    }
+}
+```
+
+```java
+public class ReplaceDog implements MethodReplacer {
+    @Override
+    public Object reimplement(Object obj, Method method, Object[] args) throws Throwable {
+        System.out.println("Hello, I am a white dog...");
+        Arrays.stream(args).forEach(str -> System.out.println("参数:" + str));
+        return obj;
+    }
+}
+```
+
+```xml
+<!-- ====================replace-method属性注入==================== -->
+<bean id="dogReplaceMethod" class="com.lyc.cn.v2.day01.method.replaceMethod.ReplaceDog"/>
+<bean id="originalDogReplaceMethod" class="com.lyc.cn.v2.day01.method.replaceMethod.OriginalDog">
+    <replaced-method name="sayHello" replacer="dogReplaceMethod">
+        <arg-type match="java.lang.String"></arg-type>
+    </replaced-method>
+</bean>
+```
+
+测试：
+
+
 

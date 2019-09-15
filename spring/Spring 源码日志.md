@@ -100,14 +100,14 @@ Arrays.asList(appFiles).forEach(System.out::println);
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-加载文件时使用以下代码： 
+**加载文件时使用以下代码：** 
 
 ```java
 Resource resource= new ClassPathResource("beanFactoryTest.xml");
 InputStream inputStream = resource.getInputStream();
 ```
 
- profile 属性的使用：
+ **profile 属性的使用：**
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -130,6 +130,12 @@ InputStream inputStream = resource.getInputStream();
     <param-name>spring.profile.active</param-name> 
     <param-value>dev</param-value> 
 </context-param> 
+```
+
+**manualSingletonNames 存储手动注册的bean :**
+
+```java
+xmlBeanFactory.registerSingleton("myDog", new Dog());
 ```
 
 

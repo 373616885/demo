@@ -112,7 +112,3 @@ public class ReplaceDog implements MethodReplacer {
 </bean>
 ```
 
-测试：
-
-
-

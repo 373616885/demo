@@ -389,7 +389,7 @@ protected Object getSingleton(String beanName, boolean allowEarlyReference) {
 - earlySingletonObjects ：也是保存 BeanName 和创建 bean 实例之间的关系，与 singletonObjects 的不同之处在于，当一个单例 bean 被放到这里面后，那么当 bean 还在创建过程中，就可以通过 getBean 方法获取到了，其目的是用来检测循环引用 。( earlySingletonObjects 与 singletonFactories  互斥 )
 -  registeredSingletons：用来保存当前所有巳注册的 bean
 
-### 简单的 bean 的生命周期
+### 创建bean的过程
 
 ```java
 // 刚开始的getBean() - doGetBean() - 单例模式的创建bean 
@@ -412,31 +412,100 @@ if (mbd.isSingleton()) {
 
 //DefaultSingletonBeanRegistry.getSingleton() -> 上面的 createBean(beanName, mbd, args);  
 2.AbstractAutowireCapableBeanFactory.createBean () 
-
+    // 解析Class-- ClassUtils.getDefaultClassLoader()
+    // Thread.currentThread().getContextClassLoader()
+    // AppClassLoader
+	Class<?> resolvedClass = resolveBeanClass(mbd, beanName);
+	
+	//Prepare method overrides.
+	// 存在methodOverrides--存在 lookup-method 和 replace-method 
+	// 如果一个类中存在若干个重载方法
+	// 增强的时候还需要根据参数类型进行匹配
+	// 如果当前类中的方法只有一个，那么需要被替换的的方法没有被重载
+	// 后续调用的时候便可以直接使用找到的方法，而不需要进行方法的参数匹配验证了
+	mbdToUse.prepareMethodOverrides();
 
     
 //Give BeanPostProcessors a chance to return a proxy instead of the target bean instance 
 //这里改变原始的bean变成代理的bean  
+//将 AbsractBeanDefinition 转换为 BeanWrapper 前的处理
+//子类一个修改 BeanDefinition 的机会
     
 //实现BeanPostProcessor的实现类注册到IOC中
 //所有的bean都经过bean的后置处理器BeanPostProcessor 
 //分别在bean的初始化前后对bean对象提供自己的实例化逻辑
 //postProcessAfterInitialization：初始化之后对bean进行增强处理
 //postProcessBeforeInitialization：初始化之前对bean进行增强处理
-    
+   
+
 //AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInstantiation 
 //InstantiationAwareBeanPostProcessor.postProcessBeforeInstantiation   
     
 //AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsAfterInitialization
 //BeanPostProcessors.postProcessAfterInitialization  
+
+// 这里改变原始的bean变成代理的bean 
 3.Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
+	
+	// 对处理器中的所有 lnstantiationAwareBeanPostProcessor 类型的后处理器进行 
+	// postProcessBeforelnstantiation 方法 和
+	// BeanPostProcessor.postProcessAfterInitialization 方法的调用 
     bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
     if (bean != null) {
         bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
     }
+	return bean;
+
+	// 如果返回的代理bean不等于null直接返回--不进行原始bean的创建
+	// 我们熟知的 AOP 功能就是基于这里的判断的
+	if (bean != null) {
+        return bean;
+    }
 	
-    
+// 常规创建bean就是在doCreateBean里面完成
+4.Object beanInstance = doCreateBean(beanName, mbdToUse, args);    
     
     
 ```
+
+
+
+### 循环依赖
+
+spring 容器中只处理单例的 setter 循环依赖
+
+对于构造器依赖和 prototype 范围的依赖不进行处理，直接抛出 BeanCurrentlyInCreationException
+
+​	
+
+ prototype 范围和其他范围 的依赖通过 **prototypesCurrentlyInCreation** 池去判断
+
+```java
+/** Names of beans that are currently in creation */
+private final ThreadLocal<Object> prototypesCurrentlyInCreation =
+    new NamedThreadLocal<>("Prototype beans currently in creation");
+
+// 在创建prototype和其他范围的依赖时都调用
+beforePrototypeCreation(beanName);
+afterPrototypeCreation(beanName);
+
+//判断：当前线程内有没有构造器依赖和 prototype 范围的依赖
+isPrototypeCurrentlyInCreation(String beanName)
+```
+
+singleton 范围的 有一个池 **singletonsCurrentlyInCreation** 放入当前正在创建的bean
+
+```java
+/** Names of beans that are currently in creation */
+private final Set<String> singletonsCurrentlyInCreation =
+    Collections.newSetFromMap(new ConcurrentHashMap<>(16));
+
+beforeSingletonCreation(beanName);
+afterSingletonCreation(beanName);
+
+```
+
+
+
+ 
 

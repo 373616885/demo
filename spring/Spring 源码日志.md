@@ -478,9 +478,8 @@ if (mbd.isSingleton()) {
 	return bean;
 
 
-// 常规创建bean就是在doCreateBean里面完成
-4.Object beanInstance = doCreateBean(beanName, mbdToUse, args);    
-    
+// 常规创建bean就是在doCreateBean里面完成--后面讲解
+4.Object beanInstance = doCreateBean(beanName, mbdToUse, args);   
     
 ```
 
@@ -539,7 +538,7 @@ public class CarFactoryBean implements FactoryBean<Car> {
 
 **对于构造器依赖和 prototype 范围的依赖不进行处理，直接抛出 BeanCurrentlyInCreationException**
 
-**对于prototype 范围的bean,spring无法完成依赖注入，因为 spring不缓存prototype 范围的bean**
+**对于prototype 作用域的bean,spring无法完成依赖注入，因为 spring不缓存prototype 范围的bean**
 
 **所以spring无法提前暴露创建中的bean**
 
@@ -550,6 +549,8 @@ public class CarFactoryBean implements FactoryBean<Car> {
 ```java
 addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 ```
+
+**对于singleton作用域的bean可以通过beanFactory.setAllowCircularReferences(false);来禁止循环引用**
 
 
 
@@ -592,13 +593,18 @@ afterSingletonCreation(beanName);
 
 setter 循环依赖：
 
-- Spring 容器创建单例"testA" bean ，首先根据**无参构造器**创建 bean，并暴露一个"ObjectFactory" 用于返回一个提前暴露一个创建中的 bean，并将"testA"标识符放到"**当前创建 bean 池**", 然后进行 setter 注入"testB",发现"testB" 没有，然后递归创建"testB"
-- Spring 容器创建单例"testB" bean ，首先根据**无参构造器**创建 bean，并暴露一个"ObjectFactory" 用于返回一个提前暴露一个创建中的 bean，并将"testB"标识符放到"**当前创建 bean 池**", 然后进行 setter 注入"testC",发现"testC" 没有，然后创建"testC"
+- Spring 容器创建单例"testA" bean ，首先根据**无参构造器**创建 bean，并暴露一个"ObjectFactory" 用于返回一个提前暴露一个创建中的 bean，并将"testA"标识符放到"**当前创建 bean 池**", 然后进行 setter 注入"testB"
+- addSingletonFactory （放入池中）  ->  populateBean(beanName, mbd, instanceWrapper) 属性注入
+- Spring 容器创建单例"testB" bean ，首先根据**无参构造器**创建 bean，并暴露一个"ObjectFactory" 用于返回一个提前暴露一个创建中的 bean，并将"testB"标识符放到"**当前创建 bean 池**", 然后进行 setter 注入"testC"
+- addSingletonFactory （放入池中）  ->  populateBean(beanName, mbd, instanceWrapper) 属性注入
 - Spring 容器创建单例"testC" bean ，首先根据**无参构造器**创建 bean，并暴露一个"ObjectFactory" 用于返回一个提前暴露一个创建中的 bean，并将"testC"标识符放到"**当前创建 bean 池**", 然后进行 setter 注入"testA"
+- addSingletonFactory （放入池中）  ->  populateBean(beanName, mbd, instanceWrapper) 属性注入
 - 进行注入" testA" 时由于提前暴露了"ObjectFactory" 工厂，从而使用它返回提前暴露一个创建中的 bean。
 - 最后在依赖注入 "testB"和"testA"，完成 setter 注入
 
+对于prototype 作用域的依赖：
 
+- 对于"prototype" 作用域的bean ,Spring 容器无法完成依赖注入，因为Spring 不缓存 "prototype" 作用域的bean ，因此无法提前暴露一个创建中的bean
 
 
 

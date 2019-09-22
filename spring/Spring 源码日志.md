@@ -151,8 +151,9 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
         Object bean;
 		
         // Eagerly check singleton cache for manually registered singletons.
-        // 尝试从缓存中加载单例    
-    	// 首先尝试从缓存中加载，如果加载不成功则再次尝试从 singletonFactories 中加载
+        // 尝试从缓存中 singletonObjects 加载单例    
+    	// 如果加载不成功则再次尝试从 earlySingletonObjects 中加载 （循环依赖中的提前加载）
+    	// 最后尝试从 singletonFactories 中加载获取提前曝光的 ObjectFactory  
     	// 因为在创建单例 bean 的时候会存在依赖注入的情况，而在创建依赖的时候为了避免循环依赖，
     	// 在 Spring 中创建 bean 的原则是不等 bean 创建完成就会将创建 bean 的 ObjectFactory 
         // 提早曝光加入到缓存中，一旦下一个 bean 创建时候需要依赖上一个 bean 则直接使用ObjectFactory
@@ -168,19 +169,22 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
                 }
             }
       		// 此处获取的可能是bean,
-            // 也可能是FactoryBean类型的getObject方法的返回值（ObjectFactory），
-            // FactoryBean#getObject（）方法所返回的对
-            // 需要进行处理，得到bean
+            // 也可能是FactoryBean (实现了FactoryBean的bean)
+            // 需要对FactoryBean#getObject（）方法所返回的进行处理，得到bean
+            // 当这里是有FactoryBean#getObject获取bean的时候会
+            // 会调用beanPostProcess的后置处理方法
             bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
         }
 
         else {
             // Fail if we're already creating this bean instance:
             // We're assumably within a circular reference.
+            // 这里只是证明非单例的循环依赖问题
             // 当前线程如果存在正在创建的bean 则证明这里存在循环依赖的问题
             // 如果存在 A 中有 B 的属性， B 中有 A 的属性， 
             // 那么当依赖注入的时候，就会产生当 A 还未创建完的时候因为对于 B 的创建再次返回创建 A,
             // 造成循环依赖，也就是情况： isPrototypeCurrentlyInCreation(beanName）判断 true
+            // 通过prototypesCurrentlyInCreation 这个属性判断
             if (isPrototypeCurrentlyInCreation(beanName)) {
                 throw new BeanCurrentlyInCreationException(beanName);
             }
@@ -209,7 +213,7 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
             }
 
             if (!typeCheckOnly) {
-                // 标记为正在创建
+                // 标记为正在创建 -- alreadyCreated 这个属性标记这个name已经创建了
                 markBeanAsCreated(beanName);
             }
 
@@ -226,6 +230,7 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
                 String[] dependsOn = mbd.getDependsOn();
                 if (dependsOn != null) {
                     for (String dep : dependsOn) {
+                        // 判断循环依赖的问题
                         if (isDependent(beanName, dep)) {
                             throw new BeanCreationException(mbd.getResourceDescription(), beanName,
                                     "Circular depends-on relationship between '" + beanName + "' and '" + dep + "'");
@@ -346,6 +351,8 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
 8. 针对不同的 scope 进行 bean 的创建
 9. 类型转换
 
+
+
 ### 缓存中获取单例 bean
 
 ```java
@@ -357,7 +364,7 @@ protected Object getSingleton(String beanName, boolean allowEarlyReference) {
    		// 检查缓存中是否存在--之前已经创建过了
 		Object singletonObject = this.singletonObjects.get(beanName);
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
-            // 如果为空，则锁定全局变盎并进行处理
+            // 如果为空，则锁定全局变量并进行处理
 			synchronized (this.singletonObjects) {
                 // 再从 earlySingletonObjects 里面获取
 				singletonObject = this.earlySingletonObjects.get(beanName);
@@ -388,6 +395,8 @@ protected Object getSingleton(String beanName, boolean allowEarlyReference) {
 -  singletonFactories ：用于保存 BeanName 和创建 bean 的工厂之间的关系，bean name -> ObjectFactory
 - earlySingletonObjects ：也是保存 BeanName 和创建 bean 实例之间的关系，与 singletonObjects 的不同之处在于，当一个单例 bean 被放到这里面后，那么当 bean 还在创建过程中，就可以通过 getBean 方法获取到了，其目的是用来检测循环引用 。( earlySingletonObjects 与 singletonFactories  互斥 )
 -  registeredSingletons：用来保存当前所有巳注册的 bean
+
+
 
 ### 创建bean的过程
 
@@ -446,22 +455,29 @@ if (mbd.isSingleton()) {
 
 // 这里改变原始的bean变成代理的bean 
 3.Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
-	
+    // 如果返回的代理bean不等于null直接返回--不进行原始bean的创建
+    // 我们熟知的 AOP 功能就是基于这里的判断的
+    if (bean != null) {
+        return bean;
+    }
+
 	// 对处理器中的所有 lnstantiationAwareBeanPostProcessor 类型的后处理器进行 
 	// postProcessBeforelnstantiation 方法 和
 	// BeanPostProcessor.postProcessAfterInitialization 方法的调用 
+	
+	// 经过applyBeanPostProcessorsBeforeInstantiation处理的bean
+	// 可能有可能已经不是我们认为的 bean 了, 或许是一个经过处理的代理 bean，
+	// 可能是通过 cglib 生成的，也可能是通过其他技术生成的
     bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
     if (bean != null) {
+        // spring 到这里已经不会再去创建bean了
+        // 所以要保证BeanPostProcessor.postProcessAfterInitialization 方法的调用
+        // 只能在这里处理了
         bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
     }
 	return bean;
 
-	// 如果返回的代理bean不等于null直接返回--不进行原始bean的创建
-	// 我们熟知的 AOP 功能就是基于这里的判断的
-	if (bean != null) {
-        return bean;
-    }
-	
+
 // 常规创建bean就是在doCreateBean里面完成
 4.Object beanInstance = doCreateBean(beanName, mbdToUse, args);    
     
@@ -470,13 +486,72 @@ if (mbd.isSingleton()) {
 
 
 
+### FactoryBean 的使用
+
+**当配置文件中＜bean＞的 class 属性配置的实现类是 FactoryBean 时，通过 getBean（）方法法返回的不是 FactoryBean 本身，而是 FactoryBean#getObject() 方法所返回的对象相当于  FactoryBean#getObject（）  代理了 getBean（）方法**
+
+```java
+public class CarFactoryBean implements FactoryBean<Car> {
+
+    private String info;
+
+    public void setInfo(String info) {
+        this.info = info;
+    }
+
+    @Override
+    public Car getObject() throws Exception {
+        String[] infos = StringUtils.tokenizeToStringArray(info, ",");
+        Car car = new Car();
+        if (infos.length >= 3) {
+            car.setBrand(infos[0]);
+            car.setMaxSpeed(Integer.valueOf(infos[1]));
+            car.setPrice(Double.valueOf(infos[2]));
+        }
+        return car;
+    }
+
+    @Override
+    public boolean isSingleton() {
+        return false;
+    }
+
+    @Override
+    public Class<?> getObjectType() {
+        return Car.class;
+    }
+}
+```
+
+```xml
+<bean id="car" class="com.qin.demo.bean.CarFactoryBean">
+    <property name="info" value="超级跑车,400,200000"></property>
+</bean>
+```
+
+**当调用 getBean("car")时， Spring 通过反射机制发现 CarFactoryBean实现了 FactoryBean 的接口，这时 Spring 容器就调用接口方法 CarFactoryBean#getObject（）方法返回。 如果希望获取 CarFactoryBean 的实例，则需要在使用 getBean(beanName） 方法时在 beanName 前显示的加上 ”＆”前缀，例如 getBean（"＆car"）**
+
+
+
 ### 循环依赖
 
-spring 容器中只处理单例的 setter 循环依赖
+**spring 容器中只处理单例的 setter 循环依赖**
 
-对于构造器依赖和 prototype 范围的依赖不进行处理，直接抛出 BeanCurrentlyInCreationException
+**对于构造器依赖和 prototype 范围的依赖不进行处理，直接抛出 BeanCurrentlyInCreationException**
 
-​	
+**对于prototype 范围的bean,spring无法完成依赖注入，因为 spring不缓存prototype 范围的bean**
+
+**所以spring无法提前暴露创建中的bean**
+
+**Setter 注入造成的依赖是通过 Spring 容器 提前暴露刚完成构造器注入但未完成其他步骤（如 setter 注入）的 bean 来完成的。通过提前暴露一个单例工厂方法，从而使其他 bean 能引用到 该 bean**
+
+代码：在AbstractAutowireCapableBeanFactory.doCreateBean里面
+
+```java
+addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+```
+
+
 
  prototype 范围和其他范围 的依赖通过 **prototypesCurrentlyInCreation** 池去判断
 
@@ -496,6 +571,7 @@ isPrototypeCurrentlyInCreation(String beanName)
 singleton 范围的 有一个池 **singletonsCurrentlyInCreation** 放入当前正在创建的bean
 
 ```java
+在getSingleton()方法里
 /** Names of beans that are currently in creation */
 private final Set<String> singletonsCurrentlyInCreation =
     Collections.newSetFromMap(new ConcurrentHashMap<>(16));
@@ -507,5 +583,38 @@ afterSingletonCreation(beanName);
 
 
 
- 
+ 构造器依赖：
+
+- Spring 容器创建"testA"  bean，首先去"**当前创建 bean 池**"查找是否当前 bean 正在创建，如果没发现，则继续准备其需要的构造器参数"testB" ，并将"testA"标识符放到"当前创建 bean 池"
+- Spring 容器创建"testB" bean， 首先去"**当前创建 bean 池**"查找是否当前 bean 正在创建，如果没发现，则继续准备其需要的构造器参数"testC"，并将"testB"标识符 放到“当前创建 bean 池"
+- Spring 容器创建"testC" bean， 首先去"**当前创建 bean 池**"查找是否当前 bean 正在创建，如果没发现，则继续准备其需要的构造器参数"testA"，并将"testC"标识符 放到“当前创建 bean 池"
+- 到此为止 Spring 容器要去创建"testA" bean，发现该 bean 标识符在"**当前创建 bean 池**"中，因为表示循环依赖，抛出 BeanCurrently InCreationException
+
+setter 循环依赖：
+
+- Spring 容器创建单例"testA" bean ，首先根据**无参构造器**创建 bean，并暴露一个"ObjectFactory" 用于返回一个提前暴露一个创建中的 bean，并将"testA"标识符放到"**当前创建 bean 池**", 然后进行 setter 注入"testB",发现"testB" 没有，然后递归创建"testB"
+- Spring 容器创建单例"testB" bean ，首先根据**无参构造器**创建 bean，并暴露一个"ObjectFactory" 用于返回一个提前暴露一个创建中的 bean，并将"testB"标识符放到"**当前创建 bean 池**", 然后进行 setter 注入"testC",发现"testC" 没有，然后创建"testC"
+- Spring 容器创建单例"testC" bean ，首先根据**无参构造器**创建 bean，并暴露一个"ObjectFactory" 用于返回一个提前暴露一个创建中的 bean，并将"testC"标识符放到"**当前创建 bean 池**", 然后进行 setter 注入"testA"
+- 进行注入" testA" 时由于提前暴露了"ObjectFactory" 工厂，从而使用它返回提前暴露一个创建中的 bean。
+- 最后在依赖注入 "testB"和"testA"，完成 setter 注入
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -690,7 +690,7 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 		// Initialize the bean instance.
 		Object exposedObject = bean;
 		try {
-            // 
+            // 属性填充
 			populateBean(beanName, mbd, instanceWrapper);
             // 调研始化方法，比如 init- method 
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
@@ -709,6 +709,7 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 			Object earlySingletonReference = getSingleton(beanName, false);
             // earlySingletonReference 只有在检测到有循环依赖的忻况下才会不为空 
 			if (earlySingletonReference != null) {
+                // 如果 exposedObject 没有在初始化方法中被改变，也就是没有被增强 
 				if (exposedObject == bean) {
 					exposedObject = earlySingletonReference;
 				}
@@ -735,6 +736,7 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 
 		// Register bean as disposable.
 		try {
+            // 根据 scopse 注册 bean 
 			registerDisposableBeanIfNecessary(beanName, bean, mbd);
 		}
 		catch (BeanDefinitionValidationException ex) {
@@ -746,11 +748,100 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 	}
 ```
 
+createBeanInstance ：使用适当的实例化策略为指定的bean创建一个新实例:工厂方法、构造函数自动装配或简单实例化
 
+```java
+/**
+  * 使用适当的实例化策略为指定的bean创建一个新实例:工厂方法、构造函数自动装配或简单实例化。
+  *
+  * @param beanName bean的名称
+  * @param mbd      bean的bean定义
+  * @param args     用于构造函数或工厂方法调用的显式参数
+  * @return 新实例的BeanWrapper
+  * @see #obtainFromSupplier
+  * @see #instantiateUsingFactoryMethod
+  * @see #autowireConstructor
+  * @see #instantiateBean
+  */
+protected BeanWrapper createBeanInstance(String beanName, RootBeanDefinition mbd, @Nullable Object[] args) {
+		// Make sure bean class is actually resolved at this point.
+    	// 确保此时bean类已经被解析。
+		Class<?> beanClass = resolveBeanClass(mbd, beanName);
+		// 检测beanClass是不是公共的，是否允许非公共访问的构造器和方法
+		if (beanClass != null && !Modifier.isPublic(beanClass.getModifiers()) && !mbd.isNonPublicAccessAllowed()) {
+			throw new BeanCreationException(mbd.getResourceDescription(), beanName,
+					"Bean class isn't public, and non-public access not allowed: " + beanClass.getName());
+		}
+    	// 通过实例提供者实例化（Spring5新增的实例化策略）
+    	// 如果存在 Supplier 回调，则调用 obtainFromSupplier() 进行初始化
+		// Spring5.0新增的实例化策略,如果设置了该策略,将会覆盖构造方法和工厂方法实例化策略
+		Supplier<?> instanceSupplier = mbd.getInstanceSupplier();
+		if (instanceSupplier != null) {
+			return obtainFromSupplier(instanceSupplier, beanName);
+		}
+		// 如果有工厂方法的话,则使用工厂方法实例化bean
+		if (mbd.getFactoryMethodName() != null) {
+			return instantiateUsingFactoryMethod(beanName, mbd, args);
+		}
+		
+		// Shortcut when re-creating the same bean...
+    	// 当创建一个相同的bean时,使用之前保存的快照
+    	// 单例模式: IoC容器除了可以获取Bean之外,还能销毁Bean
+    	// 		当我们调用xmlBeanFactory.destroyBean(myBeanName,myBeanInstance)
+    	// 		销毁bean时,容器是不会销毁已经解析的构造函数快照的,如果再次调用
+        // 		xmlBeanFactory.getBean(myBeanName)时,就会使用该策略了 
+    	// 原型模式: 对于该模式的理解就简单了
+    	//		IoC容器不会缓存原型模式bean的实例
+    	// 		当我们第二次向容器索取同一个bean时,就会使用该策略了
+    	// 解析构造函数是一个比较消耗性能的步骤，所以采取缓存机制，
+    	// 如果已经解析过则,不需要重复解析而是直接从 
+    	// RootBeanDefinition 中的属性resolvedConstructorOrFactoryMethod缓存中获取
+    	// 否则需要再次解析
+    	boolean resolved = false;
+		boolean autowireNecessary = false;
+		if (args == null) {
+			synchronized (mbd.constructorArgumentLock) {
+				if (mbd.resolvedConstructorOrFactoryMethod != null) {
+					resolved = true;
+					autowireNecessary = mbd.constructorArgumentsResolved;
+				}
+			}
+		}
+    	// 如果该bean已经被解析过
+		if (resolved) {
+            // 使用已经解析过的构造函数实例化
+			if (autowireNecessary) {
+				return autowireConstructor(beanName, mbd, null, null);
+			}
+            // 使用默认无参构造函数实例化
+			else {
+				return instantiateBean(beanName, mbd);
+			}
+		}
 
+		// Candidate constructors for autowiring?
+    	// 通过BeanPostProcessors确定需要使用的构造函数
+		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
+		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
+				mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
+			return autowireConstructor(beanName, mbd, ctors, args);
+		}
 
+		// No special handling: simply use no-arg constructor.
+    	// 无任何的特殊处理,则使用默认的无参构造函数实例化bean
+		return instantiateBean(beanName, mbd);
+	}
+```
 
+从该方法里我们看到了Spring实例化bean的策略:
 
+- **工厂方法（实例工厂和静态工厂）**
+- **构造函数实例化（无参构造和有参构造）**
+- **通过实例提供者实例化（Spring5新增的实例化策略）**
+
+###  无参构造函数实例化Bean
+
+instantiateBean(beanName, mbd);
 
 
 

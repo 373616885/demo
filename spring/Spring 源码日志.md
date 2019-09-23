@@ -375,6 +375,7 @@ protected Object getSingleton(String beanName, boolean allowEarlyReference) {
 					ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
 					if (singletonFactory != null) {
                         // 调用预先的getObject方法
+                        // 实际调用getEarlyBeanReference(beanName, mbd, bean)方法
 						singletonObject = singletonFactory.getObject();
                         // 记录缓存中--earlySingletonObjects和singletonFactories互斥的
 						this.earlySingletonObjects.put(beanName, singletonObject);
@@ -569,16 +570,43 @@ afterPrototypeCreation(beanName);
 isPrototypeCurrentlyInCreation(String beanName)
 ```
 
-singleton 范围的 有一个池 **singletonsCurrentlyInCreation** 放入当前正在创建的bean
+singleton 范围的 有一个参数 **singletonsCurrentlyInCreation** 通过这个参数判断
 
 ```java
-在getSingleton()方法里
+boolean earlySingletonExposure =
+   mbd.isSingleton() && 
+   this.allowCircularReferences &&
+   isSingletonCurrentlyInCreation(beanName);
+// 在DefaultSingletonBeanRegistry.isSingletonCurrentlyInCreation()
+isSingletonCurrentlyInCreation(beanName) 判断是否提前加载
+
+//在getSingleton()方法里
 /** Names of beans that are currently in creation */
 private final Set<String> singletonsCurrentlyInCreation =
     Collections.newSetFromMap(new ConcurrentHashMap<>(16));
 
 beforeSingletonCreation(beanName);
 afterSingletonCreation(beanName);
+
+/**
+ * singletonFactories 和 earlySingletonObjects 组成bean池
+ * 两个是互斥的 
+ * singletonFactories.getBean() 方法后
+ * 删除自身 然后放到 earlySingletonObjects 里
+ */
+
+addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+
+protected void addSingletonFactory(String beanName, ObjectFactory<?> singletonFactory) {
+    Assert.notNull(singletonFactory, "Singleton factory must not be null");
+    synchronized (this.singletonObjects) {
+        if (!this.singletonObjects.containsKey(beanName)) {
+            this.singletonFactories.put(beanName, singletonFactory);
+            this.earlySingletonObjects.remove(beanName);
+            this.registeredSingletons.add(beanName);
+        }
+    }
+}
 
 ```
 
@@ -608,9 +636,115 @@ setter 循环依赖：
 
 
 
+### 创建 bean
 
+经历过 resolveBeforelnstantiation 方法后，程序有两个选择  ，如果创建 了代理或者说重写了 InstantiationAwareBeanPostProcessor 的 postProcessBeforelnstantiation 方法并在方法 postProcessBeforelnstantiation 中改变了 bean 则直接返回就可以了 ， 否则需要进行常规 bean 的创建。 而 这常规 bean 的创建就是在 doCreateBean 中完成的
 
+```java
+protected Object doCreateBean(final String beanName, final RootBeanDefinition mbd, final @Nullable Object[] args)
+			throws BeanCreationException {
 
+		// Instantiate the bean.
+		BeanWrapper instanceWrapper = null;
+		if (mbd.isSingleton()) {
+			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
+		}
+		if (instanceWrapper == null) {
+            //根据指定bean使用对应的策略创建新的实例 
+            //如：工厂方法、构造函数自动注入 、简单初始化 
+			instanceWrapper = createBeanInstance(beanName, mbd, args);
+		}
+		final Object bean = instanceWrapper.getWrappedInstance();
+		Class<?> beanType = instanceWrapper.getWrappedClass();
+		if (beanType != NullBean.class) {
+			mbd.resolvedTargetType = beanType;
+		}
+
+		// Allow post-processors to modify the merged bean definition.
+		synchronized (mbd.postProcessingLock) {
+			if (!mbd.postProcessed) {
+				try {
+					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
+				}
+				catch (Throwable ex) {
+					throw new BeanCreationException(mbd.getResourceDescription(), beanName,
+							"Post-processing of merged bean definition failed", ex);
+				}
+				mbd.postProcessed = true;
+			}
+		}
+
+		// Eagerly cache singletons to be able to resolve circular references
+		// even when triggered by lifecycle interfaces like BeanFactoryAware.
+    	// 是否需要提前曝光：单例&允许循环依赖&当前正在创建中，检查循环依赖
+		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
+				isSingletonCurrentlyInCreation(beanName));
+		if (earlySingletonExposure) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Eagerly caching bean '" + beanName +
+						"' to allow for resolving potential circular references");
+			}
+			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+		}
+
+		// Initialize the bean instance.
+		Object exposedObject = bean;
+		try {
+            // 
+			populateBean(beanName, mbd, instanceWrapper);
+            // 调研始化方法，比如 init- method 
+			exposedObject = initializeBean(beanName, exposedObject, mbd);
+		}
+		catch (Throwable ex) {
+			if (ex instanceof BeanCreationException && beanName.equals(((BeanCreationException) ex).getBeanName())) {
+				throw (BeanCreationException) ex;
+			}
+			else {
+				throw new BeanCreationException(
+						mbd.getResourceDescription(), beanName, "Initialization of bean failed", ex);
+			}
+		}
+
+		if (earlySingletonExposure) {
+			Object earlySingletonReference = getSingleton(beanName, false);
+            // earlySingletonReference 只有在检测到有循环依赖的忻况下才会不为空 
+			if (earlySingletonReference != null) {
+				if (exposedObject == bean) {
+					exposedObject = earlySingletonReference;
+				}
+				else if (!this.allowRawInjectionDespiteWrapping && hasDependentBean(beanName)) {
+					String[] dependentBeans = getDependentBeans(beanName);
+					Set<String> actualDependentBeans = new LinkedHashSet<>(dependentBeans.length);
+					for (String dependentBean : dependentBeans) {
+						if (!removeSingletonIfCreatedForTypeCheckOnly(dependentBean)) {
+							actualDependentBeans.add(dependentBean);
+						}
+					}
+					if (!actualDependentBeans.isEmpty()) {
+						throw new BeanCurrentlyInCreationException(beanName,
+								"Bean with name '" + beanName + "' has been injected into other beans [" +
+								StringUtils.collectionToCommaDelimitedString(actualDependentBeans) +
+								"] in its raw version as part of a circular reference, but has eventually been " +
+								"wrapped. This means that said other beans do not use the final version of the " +
+								"bean. This is often the result of over-eager type matching - consider using " +
+								"'getBeanNamesOfType' with the 'allowEagerInit' flag turned off, for example.");
+					}
+				}
+			}
+		}
+
+		// Register bean as disposable.
+		try {
+			registerDisposableBeanIfNecessary(beanName, bean, mbd);
+		}
+		catch (BeanDefinitionValidationException ex) {
+			throw new BeanCreationException(
+					mbd.getResourceDescription(), beanName, "Invalid destruction signature", ex);
+		}
+
+		return exposedObject;
+	}
+```
 
 
 

@@ -147,6 +147,7 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
                               @Nullable final Object[] args, boolean typeCheckOnly) throws BeansException {
         // 转换对应 beanName 
 		// 传人的参数 name 参数除了正常的面层，也有可能是别名和 FactoryBean
+    	// 和originalBeanName(name);区别是这里获取到的可能是别名
         final String beanName = transformedBeanName(name);
         Object bean;
 		
@@ -736,7 +737,7 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 
 		// Register bean as disposable.
 		try {
-            // 根据 scopse 注册 bean 
+            // 根据 scopse 注册 bean （注册销毁方法）
 			registerDisposableBeanIfNecessary(beanName, bean, mbd);
 		}
 		catch (BeanDefinitionValidationException ex) {
@@ -797,6 +798,7 @@ protected BeanWrapper createBeanInstance(String beanName, RootBeanDefinition mbd
     	// 如果已经解析过则,不需要重复解析而是直接从 
     	// RootBeanDefinition 中的属性resolvedConstructorOrFactoryMethod缓存中获取
     	// 否则需要再次解析
+    	// resolvedConstructorOrFactoryMethod 存储的就是实例化bean的构造器
     	boolean resolved = false;
 		boolean autowireNecessary = false;
 		if (args == null) {
@@ -824,6 +826,7 @@ protected BeanWrapper createBeanInstance(String beanName, RootBeanDefinition mbd
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
 		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
 				mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
+            // args 显式指定参数 - factory.getBean("cat","美美",3);
 			return autowireConstructor(beanName, mbd, ctors, args);
 		}
 
@@ -843,9 +846,159 @@ protected BeanWrapper createBeanInstance(String beanName, RootBeanDefinition mbd
 
 instantiateBean(beanName, mbd);
 
+```java
+/**
+ * 创建实例使用默认的无参构造器
+ */
+protected BeanWrapper instantiateBean(final String beanName, final RootBeanDefinition mbd) {
+    try {
+        Object beanInstance;
+        final BeanFactory parent = this;
+        // 1、如果权限管理器不为空,需要校验
+        if (System.getSecurityManager() != null) {
+            beanInstance = AccessController.doPrivileged((PrivilegedAction<Object>) () ->
+                                                         getInstantiationStrategy().instantiate(mbd, beanName, parent),
+                                                         getAccessControlContext());
+        }
+        else {
+            // 2、获取实例化策略并实例化bean
+            // Spring实例化bean的两种策略: CGLIB动态代理来创建对象实例 和 JDK的反射机制
+            // 默认：new CglibSubclassingInstantiationStrategy();
+            // 如果没有使用方法覆盖(replace-method或lookup-method注入)
+            // 则使用反射创建bean的实例,
+            // 否则必须使用CGLIB机制
+			// if (!bd.hasMethodOverrides()) {}
+            beanInstance = getInstantiationStrategy().instantiate(mbd, beanName, parent);
+        }
+        // 3、实例并初始化BeanWrapper对象
+        BeanWrapper bw = new BeanWrapperImpl(beanInstance);
+        initBeanWrapper(bw);
+        return bw;
+    }
+    catch (Throwable ex) {
+        throw new BeanCreationException(
+            mbd.getResourceDescription(), beanName, "Instantiation of bean failed", ex);
+    }
+}
+```
 
+```java
+@Override
+public Object instantiate(RootBeanDefinition bd, @Nullable String beanName, BeanFactory owner) {
+    // Don't override the class with CGLIB if no overrides.
+    // 没有使用方法覆盖(replace-method或lookup-method注入)就用JDK反射机制创建实例
+    if (!bd.hasMethodOverrides()) {
+        Constructor<?> constructorToUse;
+        synchronized (bd.constructorArgumentLock) {
+            constructorToUse = (Constructor<?>) bd.resolvedConstructorOrFactoryMethod;
+            if (constructorToUse == null) {
+                final Class<?> clazz = bd.getBeanClass();
+                if (clazz.isInterface()) {
+                    throw new BeanInstantiationException(clazz, "Specified class is an interface");
+                }
+                try {
+                    if (System.getSecurityManager() != null) {
+                        constructorToUse = AccessController.doPrivileged(
+                            (PrivilegedExceptionAction<Constructor<?>>) clazz::getDeclaredConstructor);
+                    }
+                    else {
+                        constructorToUse = clazz.getDeclaredConstructor();
+                    }
+                    bd.resolvedConstructorOrFactoryMethod = constructorToUse;
+                }
+                catch (Throwable ex) {
+                    throw new BeanInstantiationException(clazz, "No default constructor found", ex);
+                }
+            }
+        }
+        // JDk反射--构造器 ctor.newInstance(args) 创建实例 args ==null 无参构造器
+        return BeanUtils.instantiateClass(constructorToUse);
+    }
+    else {
+        // Must generate CGLIB subclass.
+        // 使用cglib增强 -- 无参构造器
+        // 
+        return instantiateWithMethodInjection(bd, beanName, owner);
+    }
+}
+```
 
+jdk 反射创建实例****
 
+```java
+// jdk 反射创建实例
+public static <T> T instantiateClass(Constructor<T> ctor, Object... args) throws BeanInstantiationException {
+	Assert.notNull(ctor, "Constructor must not be null");
+    // 使构造器可以被访问
+    ReflectionUtils.makeAccessible(ctor);
+    // 从Spring Boot 2开始，Boot也开始正式支持Kotlin编程，
+    // KotlinDetector，Spring5.0新增的类，用于检测Kotlin的存在和识别Kotlin类型
+    // 我们可以在创建Spring Boot应用时程序时使用Spring初始化Kotlin
+    // 不过Kotlin要在新的Spring 5版本中才得到支持
+	return (KotlinDetector.isKotlinType(ctor.getDeclaringClass()) ?
+					KotlinDelegate.instantiateClass(ctor, args) : ctor.newInstance(args));
+    
+```
 
+**cglib创建bean实例：**
 
+```java
+/**
+ * 动态创建一个实例（实现了lookups和replace的子类）
+ */
+public Object instantiate(@Nullable Constructor<?> ctor, @Nullable Object... args) {
+    // 对类进行增强
+    Class<?> subclass = createEnhancedSubclass(this.beanDefinition);
+    Object instance;
+    if (ctor == null) {
+        // 对增强的类进行创建
+        instance = BeanUtils.instantiateClass(subclass);
+    } else {
+        try {
+            // 获取增强类的构造器
+            Constructor<?> enhancedSubclassConstructor = subclass.getConstructor(ctor.getParameterTypes());
+            // 对增强的类--创建有构造器参数的实例
+            instance = enhancedSubclassConstructor.newInstance(args);
+        } catch (Exception ex) {
+            throw new BeanInstantiationException(this.beanDefinition.getBeanClass(),
+                                                 "Failed to invoke constructor for CGLIB enhanced subclass [" + subclass.getName() + "]", ex);
+        }
+    }
+    // SPR-10785: set callbacks directly on the instance instead of in the
+    // enhanced class (via the Enhancer) in order to avoid memory leaks.
+    // 设置回调
+    Factory factory = (Factory) instance;
+    factory.setCallbacks(new Callback[] {NoOp.INSTANCE,
+                                             new 		LookupOverrideMethodInterceptor(this.beanDefinition, this.owner),
+                                             new ReplaceOverrideMethodInterceptor(this.beanDefinition, this.owner)});
+        return instance;
+        
+} 
+```
 
+```java
+// cglib 增强的类
+private static final Class<?>[] CALLBACK_TYPES = new Class<?>[]
+				{NoOp.class, LookupOverrideMethodInterceptor.class, ReplaceOverrideMethodInterceptor.class};
+
+NoOp.class : 调用原始的方法
+LookupOverrideMethodInterceptor.class:用增强的结果替换返回结果
+ReplaceOverrideMethodInterceptor.class: 替换方法的执行
+
+private Class<?> createEnhancedSubclass(RootBeanDefinition beanDefinition) {
+    Enhancer enhancer = new Enhancer();
+    enhancer.setSuperclass(beanDefinition.getBeanClass());
+    enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
+    if (this.owner instanceof ConfigurableBeanFactory) {
+        ClassLoader cl = ((ConfigurableBeanFactory) this.owner).getBeanClassLoader();
+        enhancer.setStrategy(new ClassLoaderAwareGeneratorStrategy(cl));
+    }
+    enhancer.setCallbackFilter(new MethodOverrideCallbackFilter(beanDefinition));
+    enhancer.setCallbackTypes(CALLBACK_TYPES);
+    return enhancer.createClass();
+}
+```
+
+### 有参构造方法实例化单例bean
+
+ConstructorResolver.autowireConstructor()

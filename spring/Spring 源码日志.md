@@ -1142,7 +1142,7 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
                         // 获取参数名称探索器
                         ParameterNameDiscoverer pnd = this.beanFactory.getParameterNameDiscoverer();
                         if (pnd != null) {
-                            // 获取指定构造函数的参数名称--m 
+                            // 获取指定构造函数的参数名称--这里只是参数名称没有类型
                             paramNames = pnd.getParameterNames(candidate);
                         }
                     }
@@ -1164,15 +1164,23 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
                     causes.add(ex);
                     continue;
                 }
-            }
-            else {
+            } else {
                 // Explicit arguments given -> arguments length must match exactly.
                 if (paramTypes.length != explicitArgs.length) {
                     continue;
                 }
+                // 构造函数没有参数的情况 -- 配置文件没有配 
                 argsHolder = new ArgumentsHolder(explicitArgs);
             }
-
+            
+			// 10、 通过构造函数参数权重对比,得出最适合使用的构造函数
+            // 先判断是返回是在宽松模式下解析构造函数还是在严格模式下解析构造函数。(默认是宽松模式)
+            // 10.1、对于宽松模式:例如构造函数为(String name,int age),配置文件中定义(value="美美",value="3")
+            // 	 那么对于age来讲,配置文件中的"3",可以被解析为int也可以被解析为String,
+            //   这个时候就需要来判断参数的权重,使用ConstructorResolver的静态内部类ArgumentsHolder分别对字符型和数字型的参数做权重判断
+            //   权重越小,则说明构造函数越匹配
+            // 10.2、对于严格模式:严格返回权重值,不会根据分别比较而返回比对值
+            // 10.3、minTypeDiffWeight = Integer.MAX_VALUE;而权重比较返回结果都是在Integer.MAX_VALUE做减法,起返回最大值为Integer.MAX_VALUE
             int typeDiffWeight = (mbd.isLenientConstructorResolution() ?
                                   argsHolder.getTypeDifferenceWeight(paramTypes) : argsHolder.getAssignabilityWeight(paramTypes));
             // Choose this constructor if it represents the closest match.

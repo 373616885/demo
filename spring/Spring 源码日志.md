@@ -1042,7 +1042,7 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
         if (argsToResolve != null) {
             // 解析参数类型， 如给定方法的构造函数 A( int , int ） 则通过此方法后就会把配置中的 
             //（ ”1”，”l”）转换为 (1 , 1) 
-            // 缓存中的值可能是原始值也可能是最终值
+            // 缓存中的值可能是原始值也可能是最终值 为了保证在解析一次
             argsToUse = resolvePreparedArguments(beanName, mbd, bw, constructorToUse, argsToResolve);
         }
     }

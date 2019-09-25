@@ -1181,17 +1181,21 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
             //   权重越小,则说明构造函数越匹配
             // 10.2、对于严格模式:严格返回权重值,不会根据分别比较而返回比对值
             // 10.3、minTypeDiffWeight = Integer.MAX_VALUE;而权重比较返回结果都是在Integer.MAX_VALUE做减法,起返回最大值为Integer.MAX_VALUE
+            
+            // 探测是否有不确定性的构造函数存在， 例如不同构造函数的参数为父子关系 
             int typeDiffWeight = (mbd.isLenientConstructorResolution() ?
                                   argsHolder.getTypeDifferenceWeight(paramTypes) : argsHolder.getAssignabilityWeight(paramTypes));
             // Choose this constructor if it represents the closest match.
+            // 如果它代表着当前最接近的匹配则选择作为构造函数 
             if (typeDiffWeight < minTypeDiffWeight) {
+                // 将解析到的构造函数赋予constructorToUse 
                 constructorToUse = candidate;
                 argsHolderToUse = argsHolder;
+                // 参数赋予 argsToUse
                 argsToUse = argsHolder.arguments;
                 minTypeDiffWeight = typeDiffWeight;
                 ambiguousConstructors = null;
-            }
-            else if (constructorToUse != null && typeDiffWeight == minTypeDiffWeight) {
+            } else if (constructorToUse != null && typeDiffWeight == minTypeDiffWeight) {
                 if (ambiguousConstructors == null) {
                     ambiguousConstructors = new LinkedHashSet<>();
                     ambiguousConstructors.add(constructorToUse);
@@ -1220,14 +1224,17 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
         }
 
         if (explicitArgs == null) {
+            // 将解析的构造函数加入缓存 
             argsHolderToUse.storeCache(mbd, constructorToUse);
         }
     }
 
     try {
+        
+        //  获取实例化策略并执行实例化
         final InstantiationStrategy strategy = beanFactory.getInstantiationStrategy();
         Object beanInstance;
-
+		// 实例化bean
         if (System.getSecurityManager() != null) {
             final Constructor<?> ctorToUse = constructorToUse;
             final Object[] argumentsToUse = argsToUse;
@@ -1238,7 +1245,7 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
         else {
             beanInstance = strategy.instantiate(mbd, beanName, this.beanFactory, constructorToUse, argsToUse);
         }
-
+		// 返回BeanWrapper包装类
         bw.setBeanInstance(beanInstance);
         return bw;
     }

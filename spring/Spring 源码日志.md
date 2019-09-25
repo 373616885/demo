@@ -1056,6 +1056,7 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
         boolean autowiring = (chosenCtors != null ||
        mbd.getResolvedAutowireMode() == AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR);
         
+        // resolvedValues 里面放了有下标的构造器参数 和 没有下标的构造器参数
         ConstructorArgumentValues resolvedValues = null;
 		
         // 这里定义了一个变量,来记录最小的构造函数参数个数,其作用可以参见下面解释
@@ -1067,7 +1068,9 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
             ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
             // 用于承载解析后的构造器参数
             resolvedValues = new ConstructorArgumentValues();
-            // 能解析到的参数个数
+            // 能解析到的参数个数--会找到所有必要的参数
+            // valueResolver.resolveValueIfNecessary() -- 
+            // 根据配置文件获取必要的参数 -- getBean（）放到 resolvedValues 里面   
             minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
         }
 
@@ -1120,7 +1123,7 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
             if (paramTypes.length < minNrOfArgs) {
                 continue;
             }
-
+			// 获取ArgumentsHolder对象,直接理解为一个参数持有者即可
             ArgumentsHolder argsHolder;
             if (resolvedValues != null) {
                 try {
@@ -1133,16 +1136,20 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
                            }
                            private final int x, y;
                        }
-                     *
                      */
                     String[] paramNames = ConstructorPropertiesChecker.evaluate(candidate, paramTypes.length);
                     if (paramNames == null) {
+                        // 获取参数名称探索器
                         ParameterNameDiscoverer pnd = this.beanFactory.getParameterNameDiscoverer();
                         if (pnd != null) {
-                            // 
+                            // 获取指定构造函数的参数名称--m 
                             paramNames = pnd.getParameterNames(candidate);
                         }
                     }
+                    
+                    // 这里构造器的参数在spring容器里获取不到 （多参的构造器） 
+                    // 就报错  continue;
+                    // 根据名称和数据类型创建参数持有者 
                     argsHolder = createArgumentArray(beanName, mbd, resolvedValues, bw, paramTypes, paramNames,
                                                      getUserDeclaredConstructor(candidate), autowiring);
                 }

@@ -1104,7 +1104,11 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
         int minTypeDiffWeight = Integer.MAX_VALUE;
         Set<Constructor<?>> ambiguousConstructors = null;
         LinkedList<UnsatisfiedDependencyException> causes = null;
-
+        
+		// 循环所有bean类中的构造函数,解析确定使用哪一个构造函数
+        // 首先因为构造函数已经按照参数的个数排序，参数个数最多的排在最前面，
+        // 所以判断如若解析出来的构造函数个数小于BeanDefinition中的构造函数个数，
+        // 那么肯定不会使用该构造函数进行实例化，那么循环会继续。
         for (Constructor<?> candidate : candidates) {
             // 获取构造器的参数
             Class<?>[] paramTypes = candidate.getParameterTypes();
@@ -1232,6 +1236,7 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
     try {
         
         //  获取实例化策略并执行实例化
+        // 有反射或CGLIB实例化bean 两种模式
         final InstantiationStrategy strategy = beanFactory.getInstantiationStrategy();
         Object beanInstance;
 		// 实例化bean

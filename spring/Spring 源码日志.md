@@ -1079,7 +1079,7 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
         if (candidates == null) {
             Class<?> beanClass = mbd.getBeanClass();
             try {
-                // 如果指定的构造函数不存在,则根据方法访问级别,获取该bean所有的构造函数
+                // 如果没有指定的构造函数,则根据方法访问级别,获取该bean所有的构造函数
                 // 如果不能访问就获取：beanClass.getDeclaredConstructors() 
                 // 	 就获取所有的构造器方法包括public，protected，private和默认的 
                 // 如果能访问就获取：beanClass.getConstructors()就获取 public 的构造器 
@@ -1093,19 +1093,30 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
                                                 "] from ClassLoader [" + beanClass.getClassLoader() + "] failed", ex);
             }
         }
+        
+        // 排序给定的构造函数 public 构造函数优先参数数量降序
+        // 非 public 构造函数参数数量降序 
         AutowireUtils.sortConstructors(candidates);
+        
         int minTypeDiffWeight = Integer.MAX_VALUE;
         Set<Constructor<?>> ambiguousConstructors = null;
         LinkedList<UnsatisfiedDependencyException> causes = null;
 
         for (Constructor<?> candidate : candidates) {
+            // 获取构造器的参数
             Class<?>[] paramTypes = candidate.getParameterTypes();
-
+			// 已经获取构造器，且 需要的参数个数小于当前的构造函数参数个数则终止 
+            // 因为已经按照参数个数排序
             if (constructorToUse != null && argsToUse.length > paramTypes.length) {
                 // Already found greedy constructor that can be satisfied ->
                 // do not look any further, there are only less greedy constructors left.
                 break;
             }
+            // public 的已经解析完成 解析 private 的
+            // 如果从bean类中解析到的构造函数个数小于从beanDefinition中解析到的构造函数个数
+            // 那么肯定不会使用该方法实例化,循环继续
+            // 简单的理解:beanDefinition中的构造函数和bean类中的构造函数参数个数不相等,
+            //		那么肯定不会使用该构造函数实例化
             if (paramTypes.length < minNrOfArgs) {
                 continue;
             }
@@ -1113,10 +1124,22 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
             ArgumentsHolder argsHolder;
             if (resolvedValues != null) {
                 try {
+                    /*从@ConstructorPropertie里获取参数
+                     *public class Point {
+                           @ConstructorProperties({"x", "y"})
+                           public Point(int x, int y) {
+                               this.x = x;
+                               this.y = y;
+                           }
+                           private final int x, y;
+                       }
+                     *
+                     */
                     String[] paramNames = ConstructorPropertiesChecker.evaluate(candidate, paramTypes.length);
                     if (paramNames == null) {
                         ParameterNameDiscoverer pnd = this.beanFactory.getParameterNameDiscoverer();
                         if (pnd != null) {
+                            // 
                             paramNames = pnd.getParameterNames(candidate);
                         }
                     }

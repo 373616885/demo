@@ -637,6 +637,18 @@ setter 循环依赖：
 
 
 
+![](img/20190926175935.png)
+
+1. 创建A（工厂方法--实例工厂和静态工厂，构造函数实例化--无参构造和有参构造， 通过实例提供者实例化--Spring5新增的实例化策略）
+2. 创建A的时候将 beanName和 beanA的工厂类加入缓存中
+3. 对A的属性调用populateBean 填充时，递归创建B  
+4. 创建B（工厂方法--实例工厂和静态工厂，构造函数实例化--无参构造和有参构造， 通过实例提供者实例化--Spring5新增的实例化策略）
+5. 同样的B中存在A属性 ，在实例化B 填充 属性时 （populateBean ）getBean(A)
+6. 获取到 没有填充任何属性的 A  （A 还在创建中）
+7. 因为 A 与 B 中的 A 所表示的属性地址是一样的， 所以在 A 中创建好的属性填充自然可以通过 B 中的 A 获取，这样就解决了循环依赖的问题。
+
+
+
 ### 创建 bean
 
 经历过 resolveBeforelnstantiation 方法后，程序有两个选择  ，如果创建 了代理或者说重写了 InstantiationAwareBeanPostProcessor 的 postProcessBeforelnstantiation 方法并在方法 postProcessBeforelnstantiation 中改变了 bean 则直接返回就可以了 ， 否则需要进行常规 bean 的创建。 而 这常规 bean 的创建就是在 doCreateBean 中完成的
@@ -668,6 +680,7 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
+                    // Autowired 注解正是通过此方法实现诸如类型的预解析
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -688,6 +701,14 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 				logger.debug("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
+            // 单例提前曝光的都放到这里面 
+            // 提前曝光：
+            // 1.添加getEarlyBeanReference放到singletonFactories里
+            // 2.删除earlySingletonObjects 
+            // 3.注册registeredSingletons 
+            // 对bean再一次依赖引用，主要应用 SmartInstantiationAwre BeanPost Processor, 
+            // 其中我们熟知的 AOP 就是在这里将 advice 动态织入 bean中， 
+            // 若没有则直接返回 bean，不做任何处理 
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
@@ -695,6 +716,9 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 		Object exposedObject = bean;
 		try {
             // 属性填充
+            // BeanDefinitionValueResolver类的resolveValueIfNecessary方法
+            // 里面调用 valueResolver.resolveValueIfNecessary(pv, originalValue);
+            // 调用依赖的bean
 			populateBean(beanName, mbd, instanceWrapper);
             // 调研始化方法，比如 init- method 
 			exposedObject = initializeBean(beanName, exposedObject, mbd);

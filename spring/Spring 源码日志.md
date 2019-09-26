@@ -681,6 +681,8 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 			if (!mbd.postProcessed) {
 				try {
                     // Autowired 注解正是通过此方法实现诸如类型的预解析
+                    //1 . 找到@Autowired 的注解信息放到
+                    // this.externallyManagedConfigMembers 和 this.checkedElements 中
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -1614,6 +1616,318 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
 		}
 	}
 ```
+
+
+
+### 填充对象属性 populateBean(beanName, mbd, instanceWrapper);
+
+```java
+/**
+ * Populate the bean instance in the given BeanWrapper with the property values
+ * from the bean definition.
+ * 通过 BeanDefinition 的  property values 给 bean 实例填充属性
+ * @param beanName the name of the bean
+ * @param mbd the bean definition for the bean
+ * @param bw the BeanWrapper with bean instance
+ */
+protected void populateBean(String beanName, RootBeanDefinition mbd, @Nullable BeanWrapper bw) {
+    // 如果BeanWrapper对象为null,则说明没有bean的实例
+    if (bw == null) {
+        // RootBeanDefinition中有属性,但是bean的实例为空,抛出异常
+        if (mbd.hasPropertyValues()) {
+            throw new BeanCreationException(
+                mbd.getResourceDescription(), beanName, "Cannot apply property values to null instance");
+        } else {
+            // Skip property population phase for null instance.
+            // 没有可填充的属性 
+            // RootBeanDefinition中没有属性,直接返回
+            return;
+        }
+    }
+	
+    // 给 InstantiationAwareBeanPostProcessor 处理器的 postProcessAfterinstantiation 
+    // 函数的应用一个机会， 控制程序是否继续进行属性填充
+    
+    // Give any InstantiationAwareBeanPostProcessors the opportunity to modify the
+    // state of the bean before properties are set. This can be used, for example,
+    // to support styles of field injection.
+    
+    // ② 应用InstantiationAwareBeanPostProcessor处理器
+    // 在设置属性之前,给InstantiationAwareBeanPostProcessor一个修改bean状态的机会
+    // 此函数可以控制程序是否继续进行属性填充
+    // 如:可以用来支持属性注入的类型 	
+    boolean continueWithPropertyPopulation = true;
+	
+    if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
+        for (BeanPostProcessor bp : getBeanPostProcessors()) {
+            if (bp instanceof InstantiationAwareBeanPostProcessor) {
+                InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+                // 是否继续填充bean属性
+                if (!ibp.postProcessAfterInstantiation(bw.getWrappedInstance(), beanName)) {
+                    continueWithPropertyPopulation = false;
+                    break;
+                }
+            }
+        }
+    }
+	// 如果后处理器发出停止填充命令则终止后续的执行 
+    if (!continueWithPropertyPopulation) {
+        return;
+    }
+	
+    // 获取PropertyValues属性
+    PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
+    
+    // spring默认是不开启autowire的，需要在配置文件中配置default-autowire属性
+    
+	// 解析自动装配类型
+    // 根据注人类型（ byName/byType ），提取依赖的 bean，并统一存入 PropertyValues 中。 
+    if (mbd.getResolvedAutowireMode() == AUTOWIRE_BY_NAME || mbd.getResolvedAutowireMode() == AUTOWIRE_BY_TYPE) {
+        MutablePropertyValues newPvs = new MutablePropertyValues(pvs);
+        // Add property values based on autowire by name if applicable.
+        // 根据名称自动注入
+        if (mbd.getResolvedAutowireMode() == AUTOWIRE_BY_NAME) {
+            autowireByName(beanName, mbd, bw, newPvs);
+        }
+        // Add property values based on autowire by type if applicable.
+        // 根据类型自动注人
+        if (mbd.getResolvedAutowireMode() == AUTOWIRE_BY_TYPE) {
+            autowireByType(beanName, mbd, bw, newPvs);
+        }
+        pvs = newPvs;
+    }
+	// 判断后处理器是否已经处理 
+    boolean hasInstAwareBpps = hasInstantiationAwareBeanPostProcessors();
+    // 需要依赖检查 
+    boolean needsDepCheck = (mbd.getDependencyCheck() != AbstractBeanDefinition.DEPENDENCY_CHECK_NONE);
+
+    if (hasInstAwareBpps || needsDepCheck) {
+        if (pvs == null) {
+            pvs = mbd.getPropertyValues();
+        }
+        PropertyDescriptor[] filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
+        // 有InstantiationAwareBeanPostProcessors处理器 需要处理
+        if (hasInstAwareBpps) {
+            for (BeanPostProcessor bp : getBeanPostProcessors()) {
+                if (bp instanceof InstantiationAwareBeanPostProcessor) {
+                    InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+                    pvs = ibp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
+                    if (pvs == null) {
+                        return;
+                    }
+                }
+            }
+        }
+        //  依赖检查
+        if (needsDepCheck) {
+            checkDependencies(beanName, mbd, filteredPds, pvs);
+        }
+    }
+	
+    //将所有 PropertyValues 中的属性填充至 BeanWrapper 的bean中
+    if (pvs != null) {
+        applyPropertyValues(beanName, mbd, bw, pvs);
+    }
+}
+```
+
+
+
+```java
+protected void autowireByType(
+			String beanName, AbstractBeanDefinition mbd, BeanWrapper bw, MutablePropertyValues pvs) {
+
+		TypeConverter converter = getCustomTypeConverter();
+		if (converter == null) {
+			converter = bw;
+		}
+
+		Set<String> autowiredBeanNames = new LinkedHashSet<>(4);
+    	// 寻找bw中需要依赖的注入属性
+		String[] propertyNames = unsatisfiedNonSimpleProperties(mbd, bw);
+		for (String propertyName : propertyNames) {
+			try {
+				PropertyDescriptor pd = bw.getPropertyDescriptor(propertyName);
+				// Don't try autowiring by type for type Object: never makes sense,
+				// even if it technically is a unsatisfied, non-simple property.
+				if (Object.class != pd.getPropertyType()) {
+                    // 探测指定属性的 set 方法 
+					MethodParameter methodParam = BeanUtils.getWriteMethodParameter(pd);
+					// Do not allow eager init for type matching in case of a prioritized post-processor.
+					boolean eager = !PriorityOrdered.class.isInstance(bw.getWrappedInstance());
+					DependencyDescriptor desc = new AutowireByTypeDependencyDescriptor(methodParam, eager);
+                    
+                    // 解析指定 beanName 的属性所匹配的值， 并把解析到的属性名称存储在 		
+                    // autowiredBeanNarnes中，当属性存在多个封装 bean 时
+                    // 如： 
+                    // 	@Autowired 
+                    //	private List<A> aList ; 将会找到所有匹配 A 类型的 bean 并将其注入 
+					Object autowiredArgument = resolveDependency(desc, beanName, autowiredBeanNames, converter);
+					if (autowiredArgument != null) {
+						pvs.add(propertyName, autowiredArgument);
+					}
+					for (String autowiredBeanName : autowiredBeanNames) {
+                        // 注册依赖 
+						registerDependentBean(autowiredBeanName, beanName);
+						if (logger.isDebugEnabled()) {
+							logger.debug("Autowiring by type from bean name '" + beanName + "' via property '" +
+									propertyName + "' to bean named '" + autowiredBeanName + "'");
+						}
+					}
+					autowiredBeanNames.clear();
+				}
+			}
+			catch (BeansException ex) {
+				throw new UnsatisfiedDependencyException(mbd.getResourceDescription(), beanName, propertyName, ex);
+			}
+		}
+	}
+```
+
+```java
+public Object resolveDependency(DependencyDescriptor descriptor, @Nullable String requestingBeanName,
+			@Nullable Set<String> autowiredBeanNames, @Nullable TypeConverter typeConverter) throws BeansException {
+		
+		descriptor.initParameterNameDiscovery(getParameterNameDiscoverer());
+		if (Optional.class == descriptor.getDependencyType()) {
+            // Optional 类注入的特殊处理 
+			return createOptionalDependency(descriptor, requestingBeanName);
+		}
+		else if (ObjectFactory.class == descriptor.getDependencyType() ||
+				ObjectProvider.class == descriptor.getDependencyType()) {
+            // ObjectFactory 类注入的特殊处理
+			return new DependencyObjectProvider(descriptor, requestingBeanName);
+		}
+		else if (javaxInjectProviderClass == descriptor.getDependencyType()) {
+            // javaxInjectProviderClass 类注入的特殊处理
+			return new Jsr330ProviderFactory().createDependencyProvider(descriptor, requestingBeanName);
+		}
+		else {
+            // 某个属性值是否需要延迟加载
+			Object result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(
+					descriptor, requestingBeanName);
+			if (result == null) {
+                // 通用处理逻辑 
+				result = doResolveDependency(descriptor, requestingBeanName, autowiredBeanNames, typeConverter);
+			}
+			return result;
+		}
+	}
+```
+
+
+
+```java
+@Nullable
+	public Object doResolveDependency(DependencyDescriptor descriptor, @Nullable String beanName,
+			@Nullable Set<String> autowiredBeanNames, @Nullable TypeConverter typeConverter) throws BeansException {
+
+		InjectionPoint previousInjectionPoint = ConstructorResolver.setCurrentInjectionPoint(descriptor);
+		try {
+			Object shortcut = descriptor.resolveShortcut(this);
+			if (shortcut != null) {
+				return shortcut;
+			}
+
+			Class<?> type = descriptor.getDependencyType();
+            
+            // 用于支持spring @value 注解	 
+			Object value = getAutowireCandidateResolver().getSuggestedValue(descriptor);
+			
+            if (value != null) {
+				if (value instanceof String) {
+                    // 解析内嵌的值
+					String strVal = resolveEmbeddedValue((String) value);
+					BeanDefinition bd = (beanName != null && containsBean(beanName) ? getMergedBeanDefinition(beanName) : null);
+                    // 解析@value里面可能是表达式的值
+					value = evaluateBeanDefinitionString(strVal, bd);
+				}
+				TypeConverter converter = (typeConverter != null ? typeConverter : getTypeConverter());
+                // 类型转换
+				return (descriptor.getField() != null ?
+						converter.convertIfNecessary(value, type, descriptor.getField()) :
+						converter.convertIfNecessary(value, type, descriptor.getMethodParameter()));
+			}
+            // descriptor 依赖的对象是 Array Map Collection的情况
+			// 如果解析器没有成功解析， 则需要考虑各种情况 Array Map Collection的情况
+			Object multipleBeans = resolveMultipleBeans(descriptor, beanName, autowiredBeanNames, typeConverter);
+            // 不是集合和Map的类型
+			if (multipleBeans != null) {
+				return multipleBeans;
+			}
+			// 查找自动配置的
+			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
+			if (matchingBeans.isEmpty()) {
+				if (isRequired(descriptor)) {
+					raiseNoMatchingBeanFound(type, descriptor.getResolvableType(), descriptor);
+				}
+				return null;
+			}
+
+			String autowiredBeanName;
+			Object instanceCandidate;
+
+			if (matchingBeans.size() > 1) {
+                // 匹配到多个就找 @primary 的属性
+				autowiredBeanName = determineAutowireCandidate(matchingBeans, descriptor);
+				if (autowiredBeanName == null) {
+					if (isRequired(descriptor) || !indicatesMultipleBeans(type)) {
+						return descriptor.resolveNotUnique(type, matchingBeans);
+					}
+					else {
+						// In case of an optional Collection/Map, silently ignore a non-unique case:
+						// possibly it was meant to be an empty collection of multiple regular beans
+						// (before 4.3 in particular when we didn't even look for collection beans).
+						return null;
+					}
+				}
+				instanceCandidate = matchingBeans.get(autowiredBeanName);
+			} else {
+				// We have exactly one match.
+                // 只匹配到一个
+				Map.Entry<String, Object> entry = matchingBeans.entrySet().iterator().next();
+				autowiredBeanName = entry.getKey();
+				instanceCandidate = entry.getValue();
+			}
+
+			if (autowiredBeanNames != null) {
+				autowiredBeanNames.add(autowiredBeanName);
+			}
+            // 根据类型匹配
+			if (instanceCandidate instanceof Class) {
+                // 从容器里获取bean 
+				instanceCandidate = descriptor.resolveCandidate(autowiredBeanName, type, this);
+			}
+			Object result = instanceCandidate;
+			if (result instanceof NullBean) {
+                // autowire 里面是不是必须的 required
+				if (isRequired(descriptor)) {
+					raiseNoMatchingBeanFound(type, descriptor.getResolvableType(), descriptor);
+				}
+				result = null;
+			}
+			if (!ClassUtils.isAssignableValue(type, result)) {
+				throw new BeanNotOfRequiredTypeException(autowiredBeanName, type, instanceCandidate.getClass());
+			}
+			return result;
+		}
+		finally {
+			ConstructorResolver.setCurrentInjectionPoint(previousInjectionPoint);
+		}
+	}
+```
+
+
+
+​	
+
+
+
+
+
+
+
+
 
 
 

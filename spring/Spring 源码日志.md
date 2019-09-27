@@ -745,6 +745,10 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
             // earlySingletonReference 只有在检测到有循环依赖的忻况下才会不为空 
 			if (earlySingletonReference != null) {
                 // 如果 exposedObject 没有在初始化方法中被改变，也就是没有被增强 
+                // 主要是这个方法有没有被增强
+                // applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
+                // applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
+               	
 				if (exposedObject == bean) {
 					exposedObject = earlySingletonReference;
 				}
@@ -756,6 +760,12 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 							actualDependentBeans.add(dependentBean);
 						}
 					}
+                    /*  增强后存在循环依赖的问题
+                     *  因为 bean 创建后其所依赖的 bean 一定是已经创建的， 
+                     *  actualDependentBeans  不为空则表示
+                     *  当前 bean 创建后其依赖的 bean 却没有没全部创建完，
+                     *  也就是说存在循环依赖
+                     */
 					if (!actualDependentBeans.isEmpty()) {
 						throw new BeanCurrentlyInCreationException(beanName,
 								"Bean with name '" + beanName + "' has been injected into other beans [" +
@@ -2243,5 +2253,93 @@ public void setValue(final @Nullable Object value) throws Exception {
 
 ```
 
+##### initializeBean初始化bean
 
+ bean 配置时 bean 中有一个 init-method 的属性 ，spring 经过 **实例化和属性填充** 后 调用
+
+ init-method 指定的方法
+
+```java
+protected Object initializeBean(final String beanName, final Object bean, @Nullable RootBeanDefinition mbd) {
+    // 1、调用各种AwareMethods
+    // 这里就调用 BeanNameAware 、BeanClassLoaderAware、BeanFactoryAware
+    if (System.getSecurityManager() != null) {
+        AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+            invokeAwareMethods(beanName, bean);
+            return null;
+        }, getAccessControlContext());
+    } else {
+        invokeAwareMethods(beanName, bean);
+    }
+
+    // 2、应用bean前置处理器
+    Object wrappedBean = bean;
+    if (mbd == null || !mbd.isSynthetic()) {
+        wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
+    }
+
+    // 3、调用bean的init_method初始化方法
+    try {
+        // 实现InitializingBean接口的 先执行 afterPropertiesSet 方法
+        //  ((InitializingBean) bean).afterPropertiesSet();
+        // 然后执行 init-method 方法
+        //  invokeCustomInitMethod(beanName, bean, mbd);  
+        //  	ReflectionUtils.makeAccessible(initMethod);
+		//		initMethod.invoke(bean); 
+        
+        invokeInitMethods(beanName, wrappedBean, mbd);
+    }
+    catch (Throwable ex) {
+        throw new BeanCreationException((mbd != null ? mbd.getResourceDescription() : null),beanName,"Invocation of init method failed", ex);
+    }
+    // 4、应用bean后置处理器
+    if (mbd == null || !mbd.isSynthetic()) {
+        wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
+    }
+    return wrappedBean;
+}
+```
+
+**激活 Aware 方法**
+
+ Spring 中提供一些 Aware 相关接口，比如 BeanFactoryAware、 ApplicationContextAware、 ResourceLoaderAware、 ServletContextAware 等，实现这些Aware接口的 bean在初始化之后，可以取得一些相对应的资源。
+
+例如实现BeanFactoryAware 的bean 在初始后， Spring 容器将会注入 BeanFactory 的实例，
+
+而实现 ApplicationContextAware 的 bean，在 bean 被初始后，将会被注入 ApplicationContext 的实例等。
+
+我们首先通过示例方法来了解一下 Aware 的使用
+
+```java
+//1. 定义普通 bean。
+public class Hello { 
+	public void say() {
+		System.out.println("hello");
+	}
+}
+//2. 定义 BeanFactoryAware 类型的 bean。
+public class HelloBeanFactoryAware implements BeanFactoryAware {
+
+    private BeanFactory beanFactory;
+
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
+    }
+
+    public void testAware() {
+        // 通过 hello 这个 bean id 从 beanFactory 获取实例
+        Hello hello = beanFactory.getBean("hello", Hello.class);
+        hello.say();
+    }
+}
+// 3. xml
+<bean id="hello" class="com.qin.demo.bean.Hello"/>
+<bean id ="helloBeanFactoryAware" class="com.qin.demo.bean.HelloBeanFactoryAware"/>
+// 4. 使用
+HelloBeanFactoryAware hello = beanFactory.getBean("helloBeanFactoryAware",HelloBeanFactoryAware.class);
+hello.testAware();
+
+
+```
 

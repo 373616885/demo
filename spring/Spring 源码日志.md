@@ -170,10 +170,12 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
                 }
             }
       		// 此处获取的可能是bean,
-            // 也可能是FactoryBean (实现了FactoryBean的bean)
+            // 也可能是FactoryBean (实现了FactoryBean的bean) 
+            // name 都是 & 开头的
             // 需要对FactoryBean#getObject（）方法所返回的进行处理，得到bean
+            // 
             // 当这里是有FactoryBean#getObject获取bean的时候会
-            // 会调用beanPostProcess的后置处理方法
+            // 如果非提前加载还会调用beanPostProcess的后置处理方法
             bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
         }
 
@@ -676,7 +678,10 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 
 		// Allow post-processors to modify the merged bean definition.
     	// MergedBeanDefinitionPostProcessor 的应用
-    	// bean 合并后的处理， Autowired 注解正是通过此方法实现诸如类型的预解析。 
+    	// bean 合并后的处理， Autowired 注解正是通过此方法实现诸如类型的预解析。
+    	// 先解析属性上的 @Autowired 没有才解析 @value 
+        // 后解析方法上的 @Autowired 没有才解析 @value 
+   		// 解析：PostConstruct PreDestroy
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
@@ -1395,7 +1400,7 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
 			}
             // 配置文件中有构造参数
 			if (argsToResolve != null) {
-                // 确保参数一定被解析
+                // 确保参数一定被解析转换
 				argsToUse = resolvePreparedArguments(beanName, mbd, bw, factoryMethodToUse, argsToResolve);
 			}
 		}
@@ -1707,6 +1712,7 @@ protected void populateBean(String beanName, RootBeanDefinition mbd, @Nullable B
         }
         PropertyDescriptor[] filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
         // 有InstantiationAwareBeanPostProcessors处理器 需要处理
+        // 属性后置处理器
         if (hasInstAwareBpps) {
             for (BeanPostProcessor bp : getBeanPostProcessors()) {
                 if (bp instanceof InstantiationAwareBeanPostProcessor) {

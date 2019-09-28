@@ -1697,6 +1697,10 @@ protected void populateBean(String beanName, RootBeanDefinition mbd, @Nullable B
         }
     }
 	// 如果后处理器发出停止填充命令则终止后续的执行 
+    /* 
+     * 如果上面设置 continueWithPropertyPopulation = false，表明用户可能已经自己填充了
+     * bean 的属性，不需要 Spring 帮忙填充了。此时直接返回即可
+     */
     if (!continueWithPropertyPopulation) {
         return;
     }
@@ -1726,7 +1730,13 @@ protected void populateBean(String beanName, RootBeanDefinition mbd, @Nullable B
     boolean hasInstAwareBpps = hasInstantiationAwareBeanPostProcessors();
     // 需要依赖检查 
     boolean needsDepCheck = (mbd.getDependencyCheck() != AbstractBeanDefinition.DEPENDENCY_CHECK_NONE);
-
+	
+    
+    /*
+     * 这里又是一种后置处理，用于在 Spring 填充属性到 bean 对象前，对属性的值进行相应的处理，
+     * 比如可以修改某些属性的值。这时注入到 bean 中的值就不是配置文件中的内容了，
+     * 而是经过后置处理器修改后的内容
+     */ 
     if (hasInstAwareBpps || needsDepCheck) {
         if (pvs == null) {
             pvs = mbd.getPropertyValues();
@@ -1757,6 +1767,18 @@ protected void populateBean(String beanName, RootBeanDefinition mbd, @Nullable B
     }
 }
 ```
+
+1. 获取属性列表 pvs
+
+2. 在属性被填充到 bean 前，应用后置处理自定义属性填充
+
+3. 根据名称或类型解析相关依赖
+
+4. 再次应用后置处理，用于动态修改属性列表 pvs 的内容
+
+5. 将属性应用到 bean 对象中
+
+也就是根据名称或类型解析相关依赖（autowire）。该逻辑只会解析依赖，并不会将解析出的依赖立即注入到 bean 对象中。所有的属性值是在 applyPropertyValues 方法中统一被注入到 bean 对象中的
 
 
 

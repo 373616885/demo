@@ -148,6 +148,14 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
         // 转换对应 beanName 
 		// 传人的参数 name 参数除了正常的面层，也有可能是别名和 FactoryBean
     	// 和originalBeanName(name);区别是这里获取到的可能是别名
+     	/*
+         * 通过 name 获取 beanName。这里不使用 name 直接作为 beanName 有两点原因：
+         * 1. name 可能会以 & 字符开头，表明调用者想获取 FactoryBean 本身，而非 FactoryBean 
+         *    实现类所创建的 bean。在 BeanFactory 中，FactoryBean 的实现类和其他的 bean 存储
+         *    方式是一致的，即 <beanName, bean>，beanName 中是没有 & 这个字符的。所以我们需要
+         *    将 name 的首字符 & 移除，这样才能从缓存里取到 FactoryBean 实例。
+         * 2. 若 name 是一个别名，则应将别名转换为具体的实例名，也就是 beanName。
+         */
         final String beanName = transformedBeanName(name);
         Object bean;
 		
@@ -193,9 +201,9 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
             }
 
             // Check if bean definition exists in this factory.
-            // 父类工厂
+            // 先检查父类容器 有没有 bean 实例
             BeanFactory parentBeanFactory = getParentBeanFactory();
-            // 存在父类工厂，且当前工厂类不包含BeanDefintion信息
+            // 存在父类容器，且当前容器不包含BeanDefintion信息
             if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
                 // Not found -> check parent.
                 // 获取原始bean的名称
@@ -224,6 +232,18 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
                 // 将存储 XML 配置文件的 GernericBeanDefinition 转换为 RootBeanDefinition 
                 // 合并相关的的父类属性（如果存在）
                 // 因为后续所有的bean都是针对于 RootBeanDefinition 处理 
+                // 下面是配置了相关父类属性的配置	
+                /*
+                <bean id="hello" class="xyz.coolblog.innerbean.Hello">
+                    <property name="content" value="hello"/>
+                </bean>
+
+                <bean id="hello-child" parent="hello">
+                    <property name="content" value="I`m hello-child"/>
+                </bean> 
+				*/
+                // hello-child 未配置 class 属性，这里我们让它继承父配置中的 class 属性
+                
                 final RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
                 // 检查 RootBeanDefinition 是不是抽象类
                 checkMergedBeanDefinition(mbd, beanName, args);
@@ -234,6 +254,16 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
                 if (dependsOn != null) {
                     for (String dep : dependsOn) {
                         // 判断循环依赖的问题
+                        /*
+                         * 检测是否存在 depends-on 循环依赖，若存在则抛异常。比如 A 依赖 B，
+                         * B 又依赖 A，他们的配置如下：
+                         *   <bean id="beanA" class="BeanA" depends-on="beanB">
+                         *   <bean id="beanB" class="BeanB" depends-on="beanA">
+                         *   
+                         * beanA 要求 beanB 在其之前被创建，但 beanB 又要求 beanA 先于它
+                         * 创建。这个时候形成了循环，对于 depends-on 循环，Spring 会直接
+                         * 抛出异常
+                     	*/
                         if (isDependent(beanName, dep)) {
                             throw new BeanCreationException(mbd.getResourceDescription(), beanName,
                                     "Circular depends-on relationship between '" + beanName + "' and '" + dep + "'");
@@ -256,6 +286,13 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
                 // Create bean instance.
                 // 针对scope= singleton（默认）创建bean
                 if (mbd.isSingleton()) {
+                    /*
+                     * 这里并没有直接调用 createBean 方法创建 bean 实例，而是通过 
+                     * getSingleton(String, ObjectFactory) 方法获取 bean 实例。
+                     * getSingleton(String, ObjectFactory) 方法会在内部调用 
+                     * ObjectFactory 的 getObject() 方法创建 bean，并会在创建完成后，
+                     * 将 bean 放入缓存中。
+                     */
                     sharedInstance = getSingleton(beanName, () -> {
                         try {
                             Object result = createBean(beanName, mbd, args);

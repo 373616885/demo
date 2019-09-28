@@ -2091,6 +2091,8 @@ public Object resolveDependency(DependencyDescriptor descriptor, @Nullable Strin
 				autowiredBeanNames.add(autowiredBeanName);
 			}
             // 根据类型匹配
+            // 如果实例是 Class 类型，则调用 beanFactory.getBean(String, Class) 
+            // 获取相应的 bean。否则直接返回即可
 			if (instanceCandidate instanceof Class) {
                 // 从容器里获取bean 
 				instanceCandidate = descriptor.resolveCandidate(autowiredBeanName, type, this);
@@ -2201,14 +2203,65 @@ public Object resolveDependency(DependencyDescriptor descriptor, @Nullable Strin
                 // 解析原始属性值
                 // 当注入集合属性时,如果指定了,value-type,如value-type="java.lang.String",
                 // 那么resolveValueIfNecessary也会执行类型的转换操作
+                /*
+                 * 解析属性值。举例说明，先看下面的配置：
+                 * 
+                 *   <bean id="macbook" class="MacBookPro">
+                 *       <property name="manufacturer" value="Apple"/>
+                 *       <property name="width" value="280"/>
+                 *       <property name="cpu" ref="cpu"/>
+                 *       <property name="interface">
+                 *           <list>
+                 *               <value>USB</value>
+                 *               <value>HDMI</value>
+                 *               <value>Thunderbolt</value>
+                 *           </list>
+                 *       </property>
+                 *   </bean>
+                 *
+                 * 上面是一款电脑的配置信息，每个 property 配置经过下面的方法解析后，返回如下结果：
+                 *   propertyName = "manufacturer", resolvedValue = "Apple"
+                 *   propertyName = "width", resolvedValue = "280"
+                 *   propertyName = "cpu", resolvedValue = "CPU@1234"  注：resolvedValue 是一个对象
+                 *   propertyName = "interface", resolvedValue = ["USB", "HDMI", "Thunderbolt"]
+                 *
+                 * 如上所示，resolveValueIfNecessary 会将 ref 解析为具体的对象，将 <list> 
+                 * 标签转换为 List 对象等。对于 int 类型的配置，这里并未做转换，所以 
+                 * width = "280"，还是字符串。除了解析上面几种类型，该方法还会解析 <set/>、
+                 * <map/>、<array/> 等集合配置
+                 */
 				Object resolvedValue = valueResolver.resolveValueIfNecessary(pv, originalValue);
 				// isWritableProperty-->判断属性是否可写,如果属性不存在返回false
 				// isNestedOrIndexedProperty-->判断是否索引属性或者嵌套属性
+                
+                /*
+                 * convertible 表示属性值是否可转换，由两个条件合成而来。第一个条件不难理解，解释
+                 * 一下第二个条件。第二个条件用于检测 propertyName 是否是 nested 或者 indexed，
+                 * 直接举例说明吧：
+                 * 
+                 *   public class Room {
+                 *       private Door door = new Door();
+                 *   }
+                 *
+                 * room 对象里面包含了 door 对象，如果我们想向 door 对象中注入属性值，则可以这样配置：
+                 *
+                 *   <bean id="room" class="xyz.coolblog.Room">
+                 *      <property name="door.width" value="123"/>
+                 *   </bean>
+                 * 
+                 * isNestedOrIndexedProperty 会根据 propertyName 中是否包含 . 或 [  返回 
+                 * true 和 false。包含则返回 true，否则返回 false。关于 nested 类型的属性，我
+                 * 没在实践中用过，所以不知道上面举的例子是不是合理。若不合理，欢迎指正，也请多多指教。
+                 * 关于 nested 类型的属性，大家还可以参考 Spring 的官方文档：
+                 *     https://docs.spring.io/spring/docs/4.3.17.RELEASE/spring-framework-reference/htmlsingle/#beans-beans-conventions
+                 */
 				Object convertedValue = resolvedValue;
 				boolean convertible = bw.isWritableProperty(propertyName) &&
 						!PropertyAccessorUtils.isNestedOrIndexedProperty(propertyName);
-				// 类型转换
+				// 内嵌属性类型转换
+                // 对于一般的属性，convertible 通常为 true
                 if (convertible) {
+                    // 对属性值的类型进行转换，比如将 String  "123" 转为 Integer 123
 					convertedValue = convertForProperty(resolvedValue, propertyName, bw, converter);
 				}
 				// Possibly store converted value in merged bean definition,
@@ -2216,8 +2269,15 @@ public Object resolveDependency(DependencyDescriptor descriptor, @Nullable Strin
 				// 缓存已经转换过的值,避免再次转换
             	// 例如:当通过FactoryBean注入属性值时 
                 // p:studentInfo="张三,25,三年二班",会有resolvedValue == originalValue
+                
+                /*
+                 * 如果 originalValue 是通过 autowireByType 或 autowireByName 解析而来，
+                 * 那么此处条件成立，即 (resolvedValue == originalValue) = true
+                 */
            		if (resolvedValue == originalValue) {
 					if (convertible) {
+                        // 将 convertedValue 设置到 pv 中，
+                    	// 后续再次创建同一个 bean 时，就无需再次进行转换了
 						pv.setConvertedValue(convertedValue);
 					}
 					deepCopy.add(pv);
@@ -2225,6 +2285,7 @@ public Object resolveDependency(DependencyDescriptor descriptor, @Nullable Strin
 				else if (convertible && originalValue instanceof TypedStringValue &&
 						!((TypedStringValue) originalValue).isDynamic() &&
 						!(convertedValue instanceof Collection || ObjectUtils.isArray(convertedValue))) {
+                    
 					pv.setConvertedValue(convertedValue);
 					deepCopy.add(pv);
 				}

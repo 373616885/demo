@@ -764,7 +764,21 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
             // 里面调用 valueResolver.resolveValueIfNecessary(pv, originalValue);
             // 调用依赖的bean
 			populateBean(beanName, mbd, instanceWrapper);
+            
+             /*
+             * 进行余下的初始化工作，详细如下：
+             * 1. 判断 bean 是否实现了 BeanNameAware、BeanFactoryAware、
+             *    BeanClassLoaderAware 等接口，并执行接口方法
+             * 2. 应用 bean 初始化前置操作
+             * 3. 如果 bean 实现了 InitializingBean 接口，则执行 afterPropertiesSet 
+             *    方法。如果用户配置了 init-method，则调用相关方法执行自定义初始化逻辑
+             * 4. 应用 bean 初始化后置操作
+             * 
+             * 另外，AOP 相关逻辑也会在该方法中织入切面逻辑，此时的 exposedObject 就变成了
+             * 一个代理对象了
+             */
             // 调研始化方法，比如 init- method 
+            
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -1111,10 +1125,12 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
                 // 例如：构造函数参数要求的是 int 类型，但是原始的参数值可能是 String 类型的“l” ，
                 // 那么即使在缓存中得到了参数，
                 // 也需要经过类型转换器的过滤以确保参数类型与对应的构造函数参数类型完全对应
+                // 获取已解析的构造方法参数列表
                 argsToUse = mbd.resolvedConstructorArguments;
                 if (argsToUse == null) {
                     // 解析配置文件后的构造涵数参数 
                     // 就是String "1" 转成 int 1 后的参数
+                    // 若 argsToUse 为空，则获取未解析的构造方法参数列表
                     argsToResolve = mbd.preparedConstructorArguments;
                 }
             }
@@ -1153,6 +1169,17 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
             // 能解析到的参数个数--会找到所有必要的参数
             // valueResolver.resolveValueIfNecessary() -- 
             // 根据配置文件获取必要的参数 -- getBean（）放到 resolvedValues 里面   
+            /*
+             * 确定构造方法参数数量，比如下面的配置：
+             *     <bean id="persion" class="xyz.coolblog.autowire.Person">
+             *         <constructor-arg index="0" value="xiaoming"/>
+             *         <constructor-arg index="1" value="1"/>
+             *         <constructor-arg index="2" value="man"/>
+             *     </bean>
+             *
+             * 此时 minNrOfArgs = maxIndex + 1 = 2 + 1 = 3，除了计算 minNrOfArgs，
+             * 下面的方法还会将 cargs 中的参数数据转存到 resolvedValues 中
+             */
             minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
         }
 
@@ -1269,6 +1296,17 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
             // 10.3、minTypeDiffWeight = Integer.MAX_VALUE;而权重比较返回结果都是在Integer.MAX_VALUE做减法,起返回最大值为Integer.MAX_VALUE
             
             // 探测是否有不确定性的构造函数存在， 例如不同构造函数的参数为父子关系 
+             /*
+             * 计算参数值（argsHolder.arguments）每个参数类型与构造方法参数列表
+             * （paramTypes）中参数的类型差异量，差异量越大表明参数类型差异越大。参数类型差异
+             * 越大，表明当前构造方法并不是一个最合适的候选项。引入差异量（typeDiffWeight）
+             * 变量目的：是将候选构造方法的参数列表类型与参数值列表类型的差异进行量化，通过量化
+             * 后的数值筛选出最合适的构造方法。
+             * 
+             * 讲完差异量，再来说说 mbd.isLenientConstructorResolution() 条件。
+             * 官方的解释是：返回构造方法的解析模式，有宽松模式（lenient mode）和严格模式
+             * （strict mode）两种类型可选。具体的细节没去研究，就不多说了。
+             */
             int typeDiffWeight = (mbd.isLenientConstructorResolution() ?
                                   argsHolder.getTypeDifferenceWeight(paramTypes) : argsHolder.getAssignabilityWeight(paramTypes));
             // Choose this constructor if it represents the closest match.
@@ -1282,6 +1320,12 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
                 minTypeDiffWeight = typeDiffWeight;
                 ambiguousConstructors = null;
             } else if (constructorToUse != null && typeDiffWeight == minTypeDiffWeight) {
+                
+                /* 
+                 * 如果两个构造方法与参数值类型列表之间的差异量一致，那么这两个方法都可以作为
+                 * 候选项，这个时候就出现歧义了，这里先把有歧义的构造方法放入 
+                 * ambiguousConstructors 集合中
+                 */
                 if (ambiguousConstructors == null) {
                     ambiguousConstructors = new LinkedHashSet<>();
                     ambiguousConstructors.add(constructorToUse);
@@ -1289,7 +1333,8 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
                 ambiguousConstructors.add(candidate);
             }
         }
-
+		
+        // 若上面未能筛选出合适的构造方法，这里将抛出 BeanCreationException 异常
         if (constructorToUse == null) {
             if (causes != null) {
                 UnsatisfiedDependencyException ex = causes.removeLast();
@@ -1302,6 +1347,13 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
                                             "Could not resolve matching constructor " +
                                             "(hint: specify index/type/name arguments for simple parameters to avoid type ambiguities)");
         }
+        
+        
+        /*
+         * 如果 constructorToUse != null，且 ambiguousConstructors 也不为空，表明解析
+         * 出了多个的合适的构造方法，此时就出现歧义了。Spring 不会擅自决定使用哪个构造方法，
+         * 所以抛出异常。
+         */
         else if (ambiguousConstructors != null && !mbd.isLenientConstructorResolution()) {
             throw new BeanCreationException(mbd.getResourceDescription(), beanName,
                                             "Ambiguous constructor matches found in bean '" + beanName + "' " +
@@ -1311,6 +1363,14 @@ public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
 
         if (explicitArgs == null) {
             // 将解析的构造函数加入缓存 
+            /*
+             * 缓存相关信息，比如：
+             *   1. 已解析出的构造方法对象 resolvedConstructorOrFactoryMethod
+             *   2. 构造方法参数列表是否已解析标志 constructorArgumentsResolved
+             *   3. 参数值列表 resolvedConstructorArguments 或 preparedConstructorArguments
+             *
+             * 这些信息可用在其他地方，用于进行快捷判断
+             */
             argsHolderToUse.storeCache(mbd, constructorToUse);
         }
     }
@@ -1830,17 +1890,38 @@ protected void autowireByType(
 
 		Set<String> autowiredBeanNames = new LinkedHashSet<>(4);
     	// 寻找bw中需要依赖的注入属性
+    	// 获取非简单类型的属性
+        /*
+         * 获取非简单类型属性的名称，且该属性未被配置在配置文件中。这里从反面解释一下什么是"非简单类型"
+         * 属性，我们先来看看 Spring 认为的"简单类型"属性有哪些，如下：
+         *   1. CharSequence 接口的实现类，比如 String
+         *   2. Enum
+         *   3. Date
+         *   4. URI/URL
+         *   5. Number 的继承类，比如 Integer/Long
+         *   6. byte/short/int... 等基本类型
+         *   7. Locale
+         *   8. 以上所有类型的数组形式，比如 String[]、Date[]、int[] 等等
+         * 
+         * 除了要求非简单类型的属性外，还要求属性未在配置文件中配置过，也就是 pvs.contains(pd.getName()) = false。
+         */
 		String[] propertyNames = unsatisfiedNonSimpleProperties(mbd, bw);
 		for (String propertyName : propertyNames) {
 			try {
 				PropertyDescriptor pd = bw.getPropertyDescriptor(propertyName);
 				// Don't try autowiring by type for type Object: never makes sense,
 				// even if it technically is a unsatisfied, non-simple property.
+                // 如果属性类型为 Object，则忽略，不做解析
 				if (Object.class != pd.getPropertyType()) {
                     // 探测指定属性的 set 方法 
+                    /*
+                     * 获取 setter 方法（write method）的参数信息，比如参数在参数列表中的
+                     * 位置，参数类型，以及该参数所归属的方法等信息
+                     */
 					MethodParameter methodParam = BeanUtils.getWriteMethodParameter(pd);
 					// Do not allow eager init for type matching in case of a prioritized post-processor.
 					boolean eager = !PriorityOrdered.class.isInstance(bw.getWrappedInstance());
+                    // 创建依赖描述对象
 					DependencyDescriptor desc = new AutowireByTypeDependencyDescriptor(methodParam, eager);
                     
                     // 解析指定 beanName 的属性所匹配的值， 并把解析到的属性名称存储在 		
@@ -1850,6 +1931,7 @@ protected void autowireByType(
                     //	private List<A> aList ; 将会找到所有匹配 A 类型的 bean 并将其注入 
 					Object autowiredArgument = resolveDependency(desc, beanName, autowiredBeanNames, converter);
 					if (autowiredArgument != null) {
+                        // 将解析出的 bean 存入到属性值列表（pvs）中
 						pvs.add(propertyName, autowiredArgument);
 					}
 					for (String autowiredBeanName : autowiredBeanNames) {
@@ -1910,14 +1992,16 @@ public Object resolveDependency(DependencyDescriptor descriptor, @Nullable Strin
 
 		InjectionPoint previousInjectionPoint = ConstructorResolver.setCurrentInjectionPoint(descriptor);
 		try {
+            // 该方法最终调用了 beanFactory.getBean(String, Class)，从容器中获取依赖
 			Object shortcut = descriptor.resolveShortcut(this);
+             // 如果容器中存在所需依赖，这里进行断路操作，提前结束依赖解析逻辑
 			if (shortcut != null) {
 				return shortcut;
 			}
 
 			Class<?> type = descriptor.getDependencyType();
             
-            // 用于支持spring @value 注解	 
+            // 属性注入的时候，用于支持spring @value 注解	 
 			Object value = getAutowireCandidateResolver().getSuggestedValue(descriptor);
 			
             if (value != null) {
@@ -1941,6 +2025,32 @@ public Object resolveDependency(DependencyDescriptor descriptor, @Nullable Strin
 			if (multipleBeans != null) {
 				return multipleBeans;
 			}
+            
+            /*
+             * 按类型查找候选列表，如果某个类型已经被实例化，则返回相应的实例。
+             * 比如下面的配置：
+             *
+             *   <bean name="mongoDao" class="xyz.coolblog.autowire.MongoDao" primary="true"/>
+             *   <bean name="service" class="xyz.coolblog.autowire.Service" autowire="byType"/>
+             *   <bean name="mysqlDao" class="xyz.coolblog.autowire.MySqlDao"/>
+             *
+             * MongoDao 和 MySqlDao 均实现自 Dao 接口，Service 对象（不是接口）中有一个 Dao 
+             * 类型的属性。现在根据类型自动注入 Dao 的实现类。这里有两个候选 bean，一个是 
+             * mongoDao，另一个是 mysqlDao，其中 mongoDao 在 service 之前实例化，
+             * mysqlDao 在 service 之后实例化。此时 findAutowireCandidates 方法会返回如下的结果：
+             *
+             *   matchingBeans = [ <mongoDao, Object@MongoDao>, <mysqlDao, Class@MySqlDao> ]
+             *
+             * 注意 mysqlDao 还未实例化，所以返回的是 MySqlDao.class。
+             * 
+             * findAutowireCandidates 这个方法逻辑比较复杂，我简单说一下它的工作流程吧，如下：
+             *   1. 从 BeanFactory 中获取某种类型 bean 的名称，比如上面的配置中 
+             *      mongoDao 和 mysqlDao 均实现了 Dao 接口，所以他们是同一种类型的 bean。
+             *   2. 遍历上一步得到的名称列表，并判断 bean 名称对应的 bean 是否是合适的候选项，
+             *      若合适则添加到候选列表中，并在最后返回候选列表
+             *      
+             * findAutowireCandidates 比较复杂，我并未完全搞懂，就不深入分析了。见谅
+             */
 			// 查找自动配置的
 			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
 			if (matchingBeans.isEmpty()) {
@@ -1957,6 +2067,7 @@ public Object resolveDependency(DependencyDescriptor descriptor, @Nullable Strin
                 // 匹配到多个就找 @primary 的属性
 				autowiredBeanName = determineAutowireCandidate(matchingBeans, descriptor);
 				if (autowiredBeanName == null) {
+                    // 判断是否是必须的
 					if (isRequired(descriptor) || !indicatesMultipleBeans(type)) {
 						return descriptor.resolveNotUnique(type, matchingBeans);
 					}

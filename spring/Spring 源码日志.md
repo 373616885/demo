@@ -1672,6 +1672,16 @@ protected void populateBean(String beanName, RootBeanDefinition mbd, @Nullable B
     // 在设置属性之前,给InstantiationAwareBeanPostProcessor一个修改bean状态的机会
     // 此函数可以控制程序是否继续进行属性填充
     // 如:可以用来支持属性注入的类型 	
+    
+    /*
+     * 在属性被填充前，给 InstantiationAwareBeanPostProcessor 类型的后置处理器一个修改 
+     * bean 状态的机会。关于这段后置引用，官方的解释是：让用户可以自定义属性注入。比如用户实现一
+     * 个 InstantiationAwareBeanPostProcessor 类型的后置处理器，并通过 
+     * postProcessAfterInstantiation 方法向 bean 的成员变量注入自定义的信息。当然，如果无
+     * 特殊需求，直接使用配置中的信息注入即可。另外，Spring 并不建议大家直接实现 
+     * InstantiationAwareBeanPostProcessor 接口，如果想实现这种类型的后置处理器，更建议
+     * 通过继承 InstantiationAwareBeanPostProcessorAdapter 抽象类实现自定义后置处理器。
+     */
     boolean continueWithPropertyPopulation = true;
 	
     if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {

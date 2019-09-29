@@ -2002,6 +2002,9 @@ public Object resolveDependency(DependencyDescriptor descriptor, @Nullable Strin
 			Class<?> type = descriptor.getDependencyType();
             
             // 属性注入的时候，用于支持spring @value 注解	 
+            // 在属性注入autowireByType 里面 
+            // QualifierAnnotationAutowireCandidateResolver 
+            // 中提供了解析 @Qualifier 与 @Autowire 注解的方方法
 			Object value = getAutowireCandidateResolver().getSuggestedValue(descriptor);
 			
             if (value != null) {

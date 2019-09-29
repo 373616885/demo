@@ -2321,6 +2321,8 @@ public Object resolveValueIfNecessary(Object argName, @Nullable Object value) {
     // 1、 RuntimeBeanReference->运行时引用
     //   例如BeanA依赖BeanB,那么在配置文件中有通过配置ref标签进行引用的,
     //   在解析BeanDefinition的时候,是不会直接实例化BeanB的,那么这个引用就是RuntimeBeanReference
+    //  构造器 constructor-arg 上 ref属性的处理 使用 RuntimeBeanReference 封装
+    //   ref属性的处理。 使用 RuntimeBeanReference 封装对应的 ref名称
     if (value instanceof RuntimeBeanReference) {
         RuntimeBeanReference ref = (RuntimeBeanReference) value;
         return resolveReference(argName, ref);
@@ -2408,6 +2410,7 @@ public Object resolveValueIfNecessary(Object argName, @Nullable Object value) {
         return copy;
     }
      // 9、 解析字符串
+    //  构造器 constructor-arg 上 value 属性的处理。 使用 TypedStringValue 封装
     else if (value instanceof TypedStringValue) {
         // Convert value to target type here.
         TypedStringValue typedStringValue = (TypedStringValue) value;

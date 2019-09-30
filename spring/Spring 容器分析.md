@@ -372,7 +372,7 @@ protected final void refreshBeanFactory() throws BeansException {
         // 放到 serializableFactories 里面
         beanFactory.setSerializationId(getId());
         // 定制 beanFactory， 设置相关属性， 
-        // 包括是否允许覆盖同名称的不同定义的对象 和 循环依赖是否允许存在 
+        // 1.包括是否允许覆盖同名称的不同定义的对象 和 2.循环依赖是否允许存在 
         // 设置＠Autowired 和自Qualifier 注解解析器
         // QualifierAnnotationAutowireCandidateResolver 
         customizeBeanFactory(beanFactory);
@@ -387,6 +387,28 @@ protected final void refreshBeanFactory() throws BeansException {
     }
 }
 
+/**
+ * 如果想设置 allowBeanDefinitionOverriding 和 allowCircularReferences
+ * 使用子类覆 盖方法：
+public class MyClassPathXmlApplicationContext extends ClassPathXmlApplicationContext {
+
+    @Override
+    protected void customizeBeanFactory(DefaultListableBeanFactory beanFactory) {
+        super.setAllowBeanDefinitionOverriding(false);
+        super.setAllowCircularReferences(false);
+        super.customizeBeanFactory(beanFactory);
+    }
+}
+ * 
+ */
+protected void customizeBeanFactory(DefaultListableBeanFactory beanFactory) {
+    if (this.allowBeanDefinitionOverriding != null) {
+        beanFactory.setAllowBeanDefinitionOverriding(this.allowBeanDefinitionOverriding);
+    }
+    if (this.allowCircularReferences != null) {
+        beanFactory.setAllowCircularReferences(this.allowCircularReferences);
+    }
+}
 
 
 @Override

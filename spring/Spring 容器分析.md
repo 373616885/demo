@@ -179,6 +179,7 @@ public void refresh() throws BeansException, IllegalStateException {
         // Prepare the bean factory for use in this context.
         // 3、填充BeanFactory功能
         // ApplicationContext 在功能上的扩展也由此展开
+        // 注册一些默认的属性编辑器
         prepareBeanFactory(beanFactory);
 
         try {

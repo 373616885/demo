@@ -322,11 +322,13 @@ private void createDefaultEditors() {
 
 **接着实例化 ：orderedPostProcessors.add(beanFactory.getBean(postProcessorName, BeanFactoryPostProcessor.class));**
 
-**实例化bean并使用 BeanWrapper包装Bean实例后，调用initBeanWrapper() 放到 CustomEditorConfigurer 里面 this.propertyEditorRegistrars**  
+**实例化bean并使用 BeanWrapper包装Bean实例后，调用initBeanWrapper() 里面 执行** **registerCustomEditors(bw) 将 默认的ResourceEditorRegistrar 放到 CustomEditorConfigurer 的this.propertyEditorRegistrars** 
 
 **接着调用 invokeBeanFactoryPostProcessors(orderedPostProcessors, beanFactory);**
 
-**调用了CustomEditorConfigurer（BeanFactoryPostProcessor  类型的）中的postProcessBeanFactory()方法，将配置的属性编辑器注册至 AbstractBeanFactory中的customEditors 和 propertyEditorRegistrars 中**
+**调用了CustomEditorConfigurer（BeanFactoryPostProcessor  类型的）中的postProcessBeanFactory()方法**
+
+**将配置的属性编辑器注册至 AbstractBeanFactory中的customEditors 和 propertyEditorRegistrars 中**
 
 
 
@@ -370,6 +372,57 @@ editor.setAsText(newTextValue);
 
  
 ```
+
+
+
+
+
+## 总结
+
+```java
+1. 在填充 BeanFactory 里面 prepareBeanFactory(beanFactory);
+2. 添加默认的 ResourceEditorRegistrar 属性编辑器
+3. beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment())); 
+4，将ResourceEditorRegistrar放到 AbstractBeanFactory.propertyEditorRegistrars 属性
+4. 在激活BeanFactoryPostProcessor 处理器 invokeBeanFactoryPostProcessors(beanFactory);
+5. 先在配置信息找打到自定义的 BeanPostProcessor 的beanName
+6. 在实例化自定义的Bean中
+7. 调用initBeanWrapper() 
+8. 接着调用 registerCustomEditors(bw); 
+9. 将 ResourceEditorRegistrar 的属性编辑器放到 
+10. 放到每个BeanWrapper里面的 PropertyEditorRegistrySupport的overriddenDefaultEditors 里面
+11. 在激活里 invokeBeanFactoryPostProcessors(orderedPostProcessors, beanFactory); 
+12. 调用 CustomEditorConfigurer.postProcessBeanFactory()
+13. 将自定义的 datePropertyEditorRegistrar 
+14. 放到AbstractBeanFactory.propertyEditorRegistrars 属性中
+15. 下次 实例化的时候调用 initBeanWrapper() 的时候
+16. 将ResourceEditorRegistrar放到PropertyEditorRegistrySupport的overriddenDefaultEditors 
+17. 将datePropertyEditorRegistrar放到PropertyEditorRegistrySupport.customEditors
+18. 使用就是在属性注入的时候使用 findCustomEditor() 找到对应得属性编辑器
+19. 转换 editor.setAsText(newTextValue);
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

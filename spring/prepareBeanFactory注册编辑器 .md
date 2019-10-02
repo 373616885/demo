@@ -314,9 +314,19 @@ private void createDefaultEditors() {
 
 **AbstractBeanFactory Bean工厂中提供了customEditors自定义编辑器注册清单存储**
 
-**调用了CustomEditorConfigurer中的postProcessBeanFactory()方法，会将配置的自定义编辑器注册至**
+**在激活各种 BeanFactory 处理器 调用  invokeBeanFactoryPostProcessors(beanFactory); **
 
-**AbstractBeanFactory中的customEditors存储器中**
+**调用 beanFactory.getBeanNamesForType(BeanFactoryPostProcessor.class, true, false);**
+
+**获取配置文件的 BeanFactoryPostProcessor 类型的beanName**
+
+**接着实例化 ：orderedPostProcessors.add(beanFactory.getBean(postProcessorName, BeanFactoryPostProcessor.class));**
+
+**实例化bean并使用 BeanWrapper包装Bean实例后，调用initBeanWrapper() 放到 CustomEditorConfigurer 里面 this.propertyEditorRegistrars**  
+
+**接着调用 invokeBeanFactoryPostProcessors(orderedPostProcessors, beanFactory);**
+
+**调用了CustomEditorConfigurer（BeanFactoryPostProcessor  类型的）中的postProcessBeanFactory()方法，将配置的属性编辑器注册至 AbstractBeanFactory中的customEditors 和 propertyEditorRegistrars 中**
 
 
 
@@ -335,7 +345,7 @@ public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) 
 }
 ```
 
-编辑器注册后，在使用时通过findCustomEditor()指定属性类型，查找默认和自定义属性编辑器将字面量的值转换为属性定义的类型对象
+**编辑器注册后，在使用时属性填充的时候通过findCustomEditor()指定属性类型，查找默认和自定义属性编辑器将字面量的值转换为属性定义的类型对象**
 
 ```java
 populateBean(beanName, mbd, instanceWrapper);

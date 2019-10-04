@@ -787,6 +787,52 @@ public static void invokeBeanFactoryPostProcessors(
 
 
 
+对于 BeanDefinitionRegistry 的类型的处理类的处理主要包括以下内容。 
+
+1. 对于硬编码注册的后处理器的处理，主要是通过 AbstractApplicationContext 中的添加处理器方法 addBeanFactoryPostProcessor 进行添加 
+
+   ```java
+   @Override
+   public void addBeanFactoryPostProcessor(BeanFactoryPostProcessor postProcessor) {
+       Assert.notNull(postProcessor, "BeanFactoryPostProcessor must not be null");
+       this.beanFactoryPostProcessors.add(postProcessor);
+   }
+   ```
+
+   
+
+2. 添加完成 存放在 beanFactoryPostProcessors 中
+
+3. 处理BeanFactoryPostProcessor 是先检查 beanFactoryPostProcessors  有没有数据
+
+4. BeanDefinitionRegistryPostProcessor 继承 BeanFactoryPostProcessor  
+
+5. 不但有BeanFactoryPostProcessor  的特性 
+
+6. 还有自己的 postProcessBeanDefinitionRegistry方法 需要调用
+
+7. BeanDefinitionRegistryPostProcessor  只对 BeanDefinitionRegistry 类型有效
+
+8. 如果 beanFactory 并不是 BeanDefinitionRegistry 类型 ，那么就可以忽略 BeanDefinitionRegistryPostProcessor  直接处理 BeanFactoryPostProcessor  
+
+9.  Sping 并不保证读取的顺序 ，所以为了保证用户的调用顺序的要求，Spring 对于后处理器的调用支持按照 PriorityOrdered 或者 Ordered 的顺序调用
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

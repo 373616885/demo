@@ -184,9 +184,12 @@ public void refresh() throws BeansException, IllegalStateException {
 
         try {
             // Allows post-processing of the bean factory in context subclasses.
+            // 4、该方法是个空的模板方法 
+            // 所以的bean definitions 已经被加载 ，在实例化之前给一个机会 处理一下 
             postProcessBeanFactory(beanFactory);
 
             // Invoke factory processors registered as beans in the context.
+            // 5、调动工厂的处理器在注册 Bean到容器 之前 
             invokeBeanFactoryPostProcessors(beanFactory);
 
             // Register bean processors that intercept bean creation.
@@ -485,9 +488,53 @@ protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		}
 	}
 	*/
+    // 在spring实例后，会调用 initializeBean 初始化方法 initializeBean 
+    // 里面会调用 invokeAwareMethods 方法 
+    // 简单讲：就是实例化 Aware接口 实例的时候调用 上面的set方法 获取	一些对应的资源
     beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
     
     // 设置忽略自动装配的接口
+    // 上面的 Aware 类已经不是普通的 bean 
+    // 需要在 Spring 做 bean 的依赖注入的时候忽略它们。 
+    // 而 ignoreDependencyInterface 的作用正是在此。
+    
+    // 实例化Aware接口的Bean就可以获取对应得资源 
+    // 里面的EnvironmentAware,EmbeddedValueResolverAware，ResourceLoaderAware
+    // ApplicationEventPublisherAware,MessageSourceAware,ApplicationContextAware
+    // 6个属性不依赖注入
+	/**
+
+public class HelloApplicationContextAware implements ApplicationContextAware {
+	// 这个不依赖注入
+    private EnvironmentAware environmentAware;
+
+    public void setEnvironmentAware(EnvironmentAware environmentAware) {
+        this.environmentAware = environmentAware;
+    }
+	// 这个依赖注入
+    private MyBean myBean;
+
+    public void setMyBean(MyBean myBean) {
+        this.myBean = myBean;
+    }
+
+    private ApplicationContext applicationContext;
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+
+    public void testAware() {
+        // 通过 hello 这个 bean id 从 beanFactory 获取实例
+        Hello hello = applicationContext.getBean("hello", Hello.class);
+        hello.say();
+        System.out.println(myBean.getDateValue());
+        System.out.println(environmentAware.toString());
+    }
+}
+	*/
     beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
     beanFactory.ignoreDependencyInterface(EmbeddedValueResolverAware.class);
     beanFactory.ignoreDependencyInterface(ResourceLoaderAware.class);
@@ -498,12 +545,19 @@ protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
     // BeanFactory interface not registered as resolvable type in a plain factory.
     // MessageSource registered (and found for autowiring) as a bean.
     // 设置几个自动装配的特殊规则
+    // 注册依赖 
+    // 当 bean 的属性注 入的时候， 
+    // 一旦检测到属性为 BeanFactory 类型便会将 beanFactory 的实例注入进去
+    // BeanFactory,ResourceLoader,ApplicationEventPublisher,ApplicationContext 
+    // 上面4个作为Bean的属性时，直接注入
     beanFactory.registerResolvableDependency(BeanFactory.class, beanFactory);
     beanFactory.registerResolvableDependency(ResourceLoader.class, this);
     beanFactory.registerResolvableDependency(ApplicationEventPublisher.class, this);
     beanFactory.registerResolvableDependency(ApplicationContext.class, this);
-
+		
     // Register early post-processor for detecting inner beans as ApplicationListeners.
+    // 添加ApplicationListener接口到AbstractApplicationContext.applicationListeners里面
+    // 注册检测到的 ApplicationListener 接口
     beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(this));
 
     
@@ -532,6 +586,8 @@ protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 ```
 
 
+
+#### invokeBeanFactoryPostProcessors–>调用BeanFactoryPostProcessor
 
 
 

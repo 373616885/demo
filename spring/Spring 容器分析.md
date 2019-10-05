@@ -193,6 +193,9 @@ public void refresh() throws BeansException, IllegalStateException {
             invokeBeanFactoryPostProcessors(beanFactory);
 
             // Register bean processors that intercept bean creation.
+            // 上面是调用 BeanFactoryPostProcessors 
+            // 这里是注册BeanPostProcessors 
+            // 6、注册BeanPostProcessors
             registerBeanPostProcessors(beanFactory);
 
             // Initialize message source for this context.
@@ -556,8 +559,10 @@ public class HelloApplicationContextAware implements ApplicationContextAware {
     beanFactory.registerResolvableDependency(ApplicationContext.class, this);
 		
     // Register early post-processor for detecting inner beans as ApplicationListeners.
-    // 添加ApplicationListener接口到AbstractApplicationContext.applicationListeners里面
+    // 添加ApplicationListener接口到AbstractApplicationContext.applicationListeners或者 
     // 注册检测到的 ApplicationListener 接口
+    // 如果是将监听器 
+    // 就放到applicationListeners或者ApplicationEventMulticaster.applicationListeners
     beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(this));
 
     
@@ -588,6 +593,24 @@ public class HelloApplicationContextAware implements ApplicationContextAware {
 
 
 #### invokeBeanFactoryPostProcessors–>调用BeanFactoryPostProcessor
+
+流程：
+
+1. BeanDefinitionRegistry 类型的 beanFactory 必须先处理 BeanDefinitionRegistryPostProcessor 
+2. 对于BeanDefinitionRegistryPostProcessor 类型 有自己定义的方法 postProcessBeanDefinitionRegistry，需要先调用 
+3. 先处理BeanDefinitionRegistryPostProcessor 类型 的 实现了PriorityOrdered 接口的
+4. 调用 BeanDefinitionRegistryPostProcessor.postProcessBeanDefinitionRegistry
+5. 然后处理BeanDefinitionRegistryPostProcessor 类型 的 实现了Ordered 接口的
+6. 调用 BeanDefinitionRegistryPostProcessor.postProcessBeanDefinitionRegistry
+7. 处理剩余没有实现 PriorityOrdered 接口 和 Ordered 接口的 
+8. 调用 BeanDefinitionRegistryPostProcessor.postProcessBeanDefinitionRegistry
+9. 到这里是 处理 BeanDefinitionRegistryPostProcessor.postProcessBeanDefinitionRegistry 方法的
+10. 接着处理 BeanFactoryPostProcessor 类型的 postProcessBeanFactory 方法
+11. 到这里 传递过来的 beanFactoryPostProcessors （通过AbstractApplicationContext 中的添加处理器方法 addBeanFactoryPostProcessor 进行添加 ）的都处理了
+12. 接下来要处理通过配置文件注册的BeanFactoryPostProcessor
+13. 处理过程会实例化 BeanFactoryPostProcessor 
+
+
 
 ```java
 public static void invokeBeanFactoryPostProcessors(
@@ -818,6 +841,150 @@ public static void invokeBeanFactoryPostProcessors(
 9.  Sping 并不保证读取的顺序 ，所以为了保证用户的调用顺序的要求，Spring 对于后处理器的调用支持按照 PriorityOrdered 或者 Ordered 的顺序调用
 
    
+
+### 注册BeanPostProcessors 
+
+​	上面是调用BeanFacotoryPostProcessors  这里是注册，真正调用的是在 bean 实例的时候 。
+
+很多功能的 BeanFacotory 是不支持**后处理器的自动注册**的。 所以在调用的时候如果没有进行手动注册其实是不
+
+能使用的。但是 在 ApplicationContext 中却添加了 自动注册功能。
+
+```java
+public static void registerBeanPostProcessors(
+			ConfigurableListableBeanFactory beanFactory, AbstractApplicationContext applicationContext) {
+
+		String[] postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor.class, true, false);
+
+		// Register BeanPostProcessorChecker that logs an info message when
+		// a bean is created during BeanPostProcessor instantiation, i.e. when
+		// a bean is not eligible for getting processed by all BeanPostProcessors.
+    	// BeanPostProcessorChecker 是一个普通的信息打印 ，
+    	// 可能会有些情况， 当 Spring 的配置中的后处理器还没有被注册
+    	// 就已经开始了 bean 的初始化时
+    	// 便会打印出 BeanPostProcessorChecker 中设定的信息 
+    	// 这里的 1 就是 BeanPostProcessorChecker 这个 BeanPostProcessor
+    	int beanProcessorTargetCount = beanFactory.getBeanPostProcessorCount() + 1 + postProcessorNames.length;
+    
+    	// 1、注册一个BeanPostProcessorChecker,它是BeanPostProcessor的子类
+   		// 用于在BeanPostProcessor实例化期间创建bean时记录信息消息，
+        // 即当bean不符合由所有BeanPostProcessors处理的资格时。
+		beanFactory.addBeanPostProcessor(new BeanPostProcessorChecker(beanFactory, beanProcessorTargetCount));
+
+		// Separate between BeanPostProcessors that implement PriorityOrdered,
+		// Ordered, and the rest.
+    	// 存储 PriorityOrdered 类型 的 BeanPostProcessor
+		List<BeanPostProcessor> priorityOrderedPostProcessors = new ArrayList<>();
+   		// 存储 MergedBeanDefinitionPostProcessor 类型 的 BeanPostProcessor
+		List<BeanPostProcessor> internalPostProcessors = new ArrayList<>();
+    	// 存储 Ordered 类型 的 BeanPostProcessor
+		List<String> orderedPostProcessorNames = new ArrayList<>();
+    	// 存储 其他的 BeanPostProcessor
+		List<String> nonOrderedPostProcessorNames = new ArrayList<>();
+    	// 归类好
+		for (String ppName : postProcessorNames) {
+			if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
+				BeanPostProcessor pp = beanFactory.getBean(ppName, BeanPostProcessor.class);
+				priorityOrderedPostProcessors.add(pp);
+                // 这个没有重复调用
+				// 因为在注册
+                // 先删除   this.beanPostProcessors.remove(beanPostProcessor);
+                // 然后添加 this.beanPostProcessors.add(beanPostProcessor);
+                // equals 方法就得看自己的实现了
+                // MergedBeanDefinitionPostProcessor 主要在 doCreateBean 
+                // createBeanInstance 之后 populateBean 之前处理
+                // 一个非常关键的类：AutowiredAnnotationBeanPostProcessor
+                // @Autowired @Value 和 @Inject 这3 个注解
+				if (pp instanceof MergedBeanDefinitionPostProcessor) {
+					internalPostProcessors.add(pp);
+				}
+			} else if (beanFactory.isTypeMatch(ppName, Ordered.class)) {
+				orderedPostProcessorNames.add(ppName);
+			} else {
+				nonOrderedPostProcessorNames.add(ppName);
+			}
+		}
+
+		// First, register the BeanPostProcessors that implement PriorityOrdered.
+		// 首先注册实现了 PriorityOrdered 的 BeanPostProcessors
+    	sortPostProcessors(priorityOrderedPostProcessors, beanFactory);
+		registerBeanPostProcessors(beanFactory, priorityOrderedPostProcessors);
+
+		// Next, register the BeanPostProcessors that implement Ordered.
+    	// 接着注册实现了 Ordered 的 BeanPostProcessors
+		List<BeanPostProcessor> orderedPostProcessors = new ArrayList<>();
+		for (String ppName : orderedPostProcessorNames) {
+			BeanPostProcessor pp = beanFactory.getBean(ppName, BeanPostProcessor.class);
+			orderedPostProcessors.add(pp);
+			if (pp instanceof MergedBeanDefinitionPostProcessor) {
+				internalPostProcessors.add(pp);
+			}
+		}
+		sortPostProcessors(orderedPostProcessors, beanFactory);
+		registerBeanPostProcessors(beanFactory, orderedPostProcessors);
+
+		// Now, register all regular BeanPostProcessors.
+    	// 注册常规的 BeanPostProcessor 
+		List<BeanPostProcessor> nonOrderedPostProcessors = new ArrayList<>();
+		for (String ppName : nonOrderedPostProcessorNames) {
+			BeanPostProcessor pp = beanFactory.getBean(ppName, BeanPostProcessor.class);
+			nonOrderedPostProcessors.add(pp);
+			if (pp instanceof MergedBeanDefinitionPostProcessor) {
+				internalPostProcessors.add(pp);
+			}
+		}
+		registerBeanPostProcessors(beanFactory, nonOrderedPostProcessors);
+
+		// Finally, re-register all internal BeanPostProcessors.
+    	// 注册 MergedBeanDefinitionPostProcessor 类型的 BeanPostProcessors
+		sortPostProcessors(internalPostProcessors, beanFactory);
+		registerBeanPostProcessors(beanFactory, internalPostProcessors);
+
+		// Re-register post-processor for detecting inner beans as ApplicationListeners,
+		// moving it to the end of the processor chain (for picking up proxies etc).
+		// 重复注册ApplicationListenerDetector -- 为了将这个处理器移动末尾
+    	beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(applicationContext));
+    
+	}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

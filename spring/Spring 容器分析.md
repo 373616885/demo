@@ -276,7 +276,8 @@ protected void prepareRefresh() {
     	/**
     	 * 继承自 ClassPathXmlApplicationContext 的 MyClassPathXmlApplicationContext
     	 * 重写 initPropertySources() 
-    	 * 默认 getEnvironment() 获取到 systemProperties 和 systemEnvironment
+    	 * 默认 getEnvironment() 获取到 StandardEnvironment
+         * StandardEnvironment 里面有 systemProperties 和 systemEnvironment
     	 * 重写：getEnvironment().setRequiredProperties("java.version");
     	 * 那么：getEnvironment().validateRequiredProperties();就可以检测是否有对应得环境变量
     	 */
@@ -439,6 +440,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
     // 对 beanDefinitionReader 进行环境变茧的设恒
     beanDefinitionReader.setEnvironment(this.getEnvironment());
     beanDefinitionReader.setResourceLoader(this);
+    // 处理xml 配置文件的
     beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));
 
     // Allow a subclass to provide custom initialization of the reader,
@@ -472,6 +474,7 @@ protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
     beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
     
     // 为beanFactory增加一个默认的propertyEditor,这个主要是对bean的属性等设置管理的一个工具
+    // 这个是Resource 属性设置管理器
     beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
 
     // Configure the bean factory with context callbacks.

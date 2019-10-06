@@ -1225,7 +1225,7 @@ ApplicationContext 实例会创建并配置所有的单例 bean 通常情况下�
 
 		// Trigger post-initialization callback for all applicable beans...
         // 实现该接口后，当所有单例 bean 都初始化完成以后， 
-        // 容器会回调该接口的方法 afterSingletonsInstantiated。
+        // 容器会回调 SmartInitializingSingleton接口的方法 afterSingletonsInstantiated。
 		// 主要应用场合就是在所有单例 bean 创建完成之后，可以在该回调中做一些事情
 		for (String beanName : beanNames) {
 			Object singletonInstance = getSingleton(beanName);
@@ -1247,7 +1247,31 @@ ApplicationContext 实例会创建并配置所有的单例 bean 通常情况下�
 
 
 
+### 完成刷新过程,通知生命周期处理器lifecycleProcessor刷新过程,同时发出ContextRefreshEvent通知
 
+```java
+protected void finishRefresh() {
+    // Clear context-level resource caches (such as ASM metadata from scanning).
+    // 清空资源缓存
+    clearResourceCaches();
+
+    // Initialize lifecycle processor for this context.
+    // 初始化生命周期处理器
+    initLifecycleProcessor();
+
+    // Propagate refresh to lifecycle processor first.
+    // 调用生命周期处理器的onRefresh方法
+    getLifecycleProcessor().onRefresh();
+
+    // Publish the final event.
+    // 推送容器刷新事件
+    publishEvent(new ContextRefreshedEvent(this));
+
+    // Participate in LiveBeansView MBean, if active.
+    // MBean...没弄明白
+    LiveBeansView.registerApplicationContext(this);
+}
+```
 
 
 

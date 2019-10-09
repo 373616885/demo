@@ -441,6 +441,18 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
     beanDefinitionReader.setEnvironment(this.getEnvironment());
     beanDefinitionReader.setResourceLoader(this);
     // 处理xml 配置文件的
+    // EntityResolver 用法
+	// SAX 应用程序需要实现自定义处理外部实体，则必须实现此接口并使用 setEntityResolver 方法向 SAX 驱动器注册一个实例
+    // 对于解析一个XML,SAX首先读取该XML文档上的声明，根据声明去寻找相应的DTD定义，以便对文档进行一个验证
+    // 默认的寻找规则，即通过网络（实现上就是声明的 DTD 的 URI 地址）来下载相应的 DTD 声明，并进行认证
+    // EntityResolver 的作用是项目本身就可以提供一个如何寻找 DTD 声明的方法，即由程序来 实现寻找 DTD 声明的过程
+    // 比如我们将 DTD 文件放到项目中某处 ，在实现时直接将此文档读 取并返回给 SAX 即可。 这样就避免了通过网络来寻找相应的声明。 
+    // EntityResolver 的接口方法声明 ： 
+    // InputSource resolveEntity (String publicId, String systernid) 
+    // 两个参数 publicId 和 systemId，并返回一个 inputSource 对象
+    // DelegatingEntityResolver 类为 EntityResolver 的实现类
+    // 里面的DTD BeansDtdResolver 类 解析
+    // 里面的XSD PluggableSchemaResolver 类 解析
     beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));
 
     // Allow a subclass to provide custom initialization of the reader,

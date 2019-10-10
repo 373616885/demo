@@ -33,4 +33,36 @@
 11. DefaultListableBeanFactory.registerBeanDefinition(beanName, definitionHolder.getBeanDefinition()); 注册 到 beanDefinitionMap ，beanDefinitionNames 里面
 
     
+    
+    
+
+**bean 子元素 meta** 
+
+是一段额外申明, 使用的时候可以通过 BeanDefinition 的 getAttibute(key）方法进行获取
+
+```xml
+<bean id="myBean" class="com.qin.demo.bean.MyBean">
+    <meta key="str" value="qinjiepeng"/>
+</bean>
+```
+
+**spring 解析值：**
+
+BeanDefinitionParserDelegate.parsePropertyValue() 
+
+ref  属性使用 RuntimeBeanReference 封装
+
+value 属性使用 TypedStringValue 封装
+
+array 属性使用 ManagedArray 封装
+
+list 属性使用 ManagedList 封装
+
+set 属性使用 ManagedSet 封装
+
+map 属性使用 ManagedMap 封装
+
+properties 属性使用 ManagedProperties 封装
+
+ 
 

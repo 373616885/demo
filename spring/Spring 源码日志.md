@@ -721,7 +721,7 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
     	// bean 合并后的处理， Autowired 注解正是通过此方法实现诸如类型的预解析。
     	// 先解析属性上的 @Autowired 没有才解析 @value 
         // 后解析方法上的 @Autowired 没有才解析 @value 
-   		// 解析：PostConstruct PreDestroy
+   		// 解析：@PostConstruct 和 @PreDestroy
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
@@ -810,6 +810,7 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 					String[] dependentBeans = getDependentBeans(beanName);
 					Set<String> actualDependentBeans = new LinkedHashSet<>(dependentBeans.length);
 					for (String dependentBean : dependentBeans) {
+                        // 增强后的没有的依赖没有创建就 add 
 						if (!removeSingletonIfCreatedForTypeCheckOnly(dependentBean)) {
 							actualDependentBeans.add(dependentBean);
 						}

@@ -226,6 +226,7 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
 
             if (!typeCheckOnly) {
                 // 标记为正在创建 -- alreadyCreated 这个属性标记这个name已经创建了
+                // 顺便清空存储RootBeanDefinition 的 mergedBeanDefinitions 
                 markBeanAsCreated(beanName);
             }
 
@@ -270,8 +271,8 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
                                     "Circular depends-on relationship between '" + beanName + "' and '" + dep + "'");
                         }
                         // 标记依赖的注册关系
-                        // dependentBeanMap 存放 dep - beanName
-                        // dependenciesForBeanMap  存放 beanName - dep
+                        // dependentBeanMap 存放 dep - beanName <set> 集合
+                        // dependenciesForBeanMap  存放 beanName - dep <set> 集合
                         registerDependentBean(dep, beanName);
                         try {
                             // 递归 getBean 获取实例
@@ -638,6 +639,7 @@ afterSingletonCreation(beanName);
 
 addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 
+// 最后结束的处理
 protected void addSingletonFactory(String beanName, ObjectFactory<?> singletonFactory) {
     Assert.notNull(singletonFactory, "Singleton factory must not be null");
     synchronized (this.singletonObjects) {
@@ -655,10 +657,10 @@ protected void addSingletonFactory(String beanName, ObjectFactory<?> singletonFa
 
  构造器依赖：
 
-- Spring 容器创建"testA"  bean，首先去"**当前创建 bean 池**"查找是否当前 bean 正在创建，如果没发现，则继续准备其需要的构造器参数"testB" ，并将"testA"标识符放到"当前创建 bean 池"
-- Spring 容器创建"testB" bean， 首先去"**当前创建 bean 池**"查找是否当前 bean 正在创建，如果没发现，则继续准备其需要的构造器参数"testC"，并将"testB"标识符 放到“当前创建 bean 池"
-- Spring 容器创建"testC" bean， 首先去"**当前创建 bean 池**"查找是否当前 bean 正在创建，如果没发现，则继续准备其需要的构造器参数"testA"，并将"testC"标识符 放到“当前创建 bean 池"
-- 到此为止 Spring 容器要去创建"testA" bean，发现该 bean 标识符在"**当前创建 bean 池**"中，因为表示循环依赖，抛出 BeanCurrently InCreationException
+- Spring 容器创建"testA"  bean 之前，首先 beforeSingletonCreation(beanName); "**当前创建 bean 池 （singletonsCurrentlyInCreation）**" add()操作查看是否可以添加，不能操作，证明存在循环依赖，当前如果没发现，使用构造器实例化 "testA" ，在获取构造器参数的时候，发现需要构造器参数"testB" 
+- Spring 容器创建"testB"  bean 之前，首先 beforeSingletonCreation(beanName); "**当前创建 bean 池 （singletonsCurrentlyInCreation）**" add()操作查看是否可以添加，不能操作，证明存在循环依赖，当前如果没发现，使用构造器实例化 "testB" ，在获取构造器参数的时候，发现需要构造器参数"testC"  
+- Spring 容器创建"testC"  bean 之前，首先 beforeSingletonCreation(beanName); "**当前创建 bean 池 （singletonsCurrentlyInCreation）**" add()操作查看是否可以添加，不能操作，证明存在循环依赖，当前如果没发现，使用构造器实例化 "testC" ，在获取构造器参数的时候，发现需要构造器参数"testA"  
+- 到此为止 Spring 容器要去创建"testA" bean，发现该 bean 标识符在"**当前创建 bean 池（singletonsCurrentlyInCreation）**"中，因为表示循环依赖，抛出 BeanCurrently InCreationException
 
 setter 循环依赖：
 

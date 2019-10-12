@@ -64,5 +64,22 @@ map 属性使用 ManagedMap 封装
 
 properties 属性使用 ManagedProperties 封装
 
- 
+**mergedBeanDefinitions:**
 
+```java
+protected void markBeanAsCreated(String beanName) {
+    if (!this.alreadyCreated.contains(beanName)) {
+        // mergedBeanDefinitions存储GenericBeanDefinition转换成RootBeanDefinition的东西    
+        synchronized (this.mergedBeanDefinitions) {
+            // 当前这个类没有在创建 
+            if (!this.alreadyCreated.contains(beanName)) {
+                // Let the bean definition get re-merged now that we're actually creating
+                // the bean... just in case some of its metadata changed in the meantime.
+                // 清空mergedBeanDefinitions存储的RootBeanDefinition
+                clearMergedBeanDefinition(beanName);
+                this.alreadyCreated.add(beanName);
+            }
+        }
+    }
+}
+```

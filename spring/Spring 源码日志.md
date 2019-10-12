@@ -197,6 +197,7 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
             // 造成循环依赖，也就是情况： isPrototypeCurrentlyInCreation(beanName）判断 true
             // 通过prototypesCurrentlyInCreation 这个属性判断
             if (isPrototypeCurrentlyInCreation(beanName)) {
+                // 当前线程正在创建多例的 bean 就会报错
                 throw new BeanCurrentlyInCreationException(beanName);
             }
 

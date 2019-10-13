@@ -717,11 +717,17 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 		}
 
 		// Allow post-processors to modify the merged bean definition.
-    	// MergedBeanDefinitionPostProcessor 的应用
+    	// 关键的类：AutowiredAnnotationBeanPostProcessor
+    
+        // AutowiredAnnotationBeanPostProcessor类把正在被spring实例化的
+    	// 		bean进行@Autowired和@Value扫描，扫描到类里面属性和方法上面如果有注解，
+    	// 		就会把对应的方法或者属性封装起来，最终封装成InjectionMetadata对象。
+    	// MergedBeanDefinitionPostProcessor 的应用 
     	// bean 合并后的处理， Autowired 注解正是通过此方法实现诸如类型的预解析。
     	// 先解析属性上的 @Autowired 没有才解析 @value 
         // 后解析方法上的 @Autowired 没有才解析 @value 
    		// 解析：@PostConstruct 和 @PreDestroy
+    	
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {

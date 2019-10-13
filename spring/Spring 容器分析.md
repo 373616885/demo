@@ -1036,7 +1036,7 @@ protected void registerListeners() {
     // Do not initialize FactoryBeans here: We need to leave all regular beans
     // uninitialized to let post-processors apply to them!
     // 其次,注册普通的事件监听器 -- 这里不初始化
-    // 不初始化 通过 post-processors 处理他们
+    // 不初始化 通过 调用的时候（实例化）
     String[] listenerBeanNames = getBeanNamesForType(ApplicationListener.class, true, false);
     for (String listenerBeanName : listenerBeanNames) {
         getApplicationEventMulticaster().addApplicationListenerBean(listenerBeanName);

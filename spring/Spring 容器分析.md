@@ -1212,7 +1212,7 @@ ApplicationContext 实例会创建并配置所有的单例 bean 通常情况下�
 					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
 					if (bean instanceof FactoryBean) {
 						final FactoryBean<?> factory = (FactoryBean<?>) bean;
-                        // SmartFactoryBean eagerInit: Bean需要立即加载的意思
+                        // SmartFactoryBean eagerInit: Bean 是否需要立即加载的意思
                         // SmartFactoryBean基本不会用到
                         // FactoryBean接口的扩展接口。接口实现并不表示是否总是返回单独的实例对象，比如FactoryBean.isSingleton()实现返回false的情况并不清晰地表示每次返回的都是单独的实例对象
 						//不实现这个扩展接口的简单FactoryBean的实现，FactoryBean.isSingleton()实现返回false总是简单地告诉我们每次返回的都是单独的实例对象，暴露出来的对象只能够通过命令访问

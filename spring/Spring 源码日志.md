@@ -639,7 +639,7 @@ afterSingletonCreation(beanName);
 
 addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 
-// 最后结束的处理
+// addSingletonFactory
 protected void addSingletonFactory(String beanName, ObjectFactory<?> singletonFactory) {
     Assert.notNull(singletonFactory, "Singleton factory must not be null");
     synchronized (this.singletonObjects) {

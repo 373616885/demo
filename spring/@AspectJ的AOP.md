@@ -111,7 +111,7 @@ public class DogAspect {
        http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/aop
        http://www.springframework.org/schema/aop/spring-aop.xsd">
-
+	
     <!--
         1、proxy-target-class
             如果被代理的目标对象至少实现了一个接口，则会使用JDK动态代理，所有实现该目标类实现的接口都将被代理
@@ -119,6 +119,9 @@ public class DogAspect {
             但是可以通过proxy-target-class属性强制指定使用CGLIB代理，
         2、expose-proxy
             解决目标对象内部的自我调用无法实施切面增强的问题
+		3、这两个属性 可以单独 在 <aop:config /> 里面设置 
+			<aop:config proxy-target-class="true"/>
+			
     -->
     <aop:aspectj-autoproxy proxy-target-class="true">
         <!-- 指定@Aspect类，支持正则表达式，符合该表达式的切面类才会被应用-->

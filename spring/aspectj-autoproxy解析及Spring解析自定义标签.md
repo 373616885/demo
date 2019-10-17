@@ -6,7 +6,21 @@
 
 **如果用了 JDK动态代理  想使用 非接口的方法 在转换类型的时候会报 com.sun.proxy.$Proxy15 cannot be cast to com.qin.demo.proxy.Dog 错误**
 
-expose-proxy：解决目标对象内部的自我调用无法实施切面增强的问题 
+ **JDK动态代理 只代理 接口的方法**
+
+**CGLIB动态代理 可以代理所有的方法 但无法通知（ advise ) final 方法，因为它们不能被覆写**
+
+**另外CGLIB动态代理 需要将 CGLIB 二进制友行包放在 classpath 下面**
+
+expose-proxy：解决目标对象内部的自我调用无法实施切面增强的问题  
+
+**（(AService) AopContext.currentProxy() ). b（）；**
+
+
+
+- JDK 动态代理：其代理对象必须是某个接口的实现，它是通过在运行期间创建一个接口的实现类未完成对目标对象的代理。
+- CGLIB 代理：实现原理类似于JDK 动态代理，只是它在运行期间生成的代理对象是针对目标类扩展的子类。 CGLIB 是高效的代码生成包，底层是依靠 ASM （开源的 Java 字节码编辑类库）操作字节码实现的，性能比 JDK 强。
+- expose-proxy：有时候目标对象内部的自我调用将无法实施切面中的增强 
 
 
 
@@ -160,7 +174,7 @@ public static void registerAspectJAnnotationAutoProxyCreatorIfNecessary(
         parserContext.getRegistry(), parserContext.extractSource(sourceElement));
     // 2、解析子标签 proxy-target-class 和 expose-proxy
     useClassProxyingIfNecessary(parserContext.getRegistry(), sourceElement);
-    // 3、注册组件并发送组件注册事件
+    // 3、注册组件并发送组件注册事件，便于监听器做进一步处理
     registerComponentIfNecessary(beanDefinition, parserContext);
 }
 

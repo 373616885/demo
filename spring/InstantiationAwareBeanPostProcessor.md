@@ -36,12 +36,14 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 
 	// 着里已经实例化完毕，还没设置属性，在这里可以自己完成属性的设置，
     // 返回值标识是否继续执行下去
+    // 在 populateBean(beanName, mbd, instanceWrapper); 里执行
 	default boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
 		return true;
 	}
 
     // 已经实例化完毕里执行-- 属性还未被设置 
     // 修改属性值
+    // 在 populateBean(beanName, mbd, instanceWrapper); 里执行
 	@Nullable
 	default PropertyValues postProcessPropertyValues(
 			PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
@@ -49,9 +51,9 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 		return pvs;
 	}
     
-    // 最后设置属性值 applyPropertyValues(beanName, mbd, bw, pvs);
+    // 接着设置属性值 applyPropertyValues(beanName, mbd, bw, pvs);
 	
-    // initializeBean(beanName, exposedObject, mbd); 里面执行BeanPostProcessor的方法 
+    // 最后在initializeBean(beanName, exposedObject, mbd);里面执行BeanPostProcessor的方法 
 }
 
 ```

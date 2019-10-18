@@ -250,3 +250,36 @@ protected boolean isEligibleAspectBean(String beanName) {
 }
 ```
 
+
+
+### 关于Advisor：
+
+**这里获取的增强，并不是Advice而是Advisor** ：
+
+如果我们定义了一个DogAspect类，并用@AspectJ对其进行注解,那么该类仅仅代表一个切面类，会被Spring扫描并解析，仅此而已，该类不代表SpringAop概念中的切面 
+
+关于SpringAop中的切面概念，可以理解为 切面=连接点+增强 
+
+而标记了@AspectJ注解的类在被Spring解析的时候 
+
+1. 提取该类的方法上的切点表达式注解：例如–>@Pointcut(“execution(* com.lyc.cn.v2.day07.*.*(…))”)，解析之后,就可以的到具体的切点.
+2. 提取该类的方法上的增强注解:例如：@Before(“test()”)解析之后,就可以得到具体的增强代码
+
+最后,通过第一步和第二步的操作,就可以得到切点+增强,那么自然就构成了一个切面 
+
+**但是Advisor接口里只包含了一个Advice,并且Advisor一般不直接提供给用户使用**,所以这里也可以理解为获取增强，当然如果理解为切面也是没有问题的 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

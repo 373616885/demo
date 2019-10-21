@@ -232,7 +232,9 @@ protected Object[] getAdvicesAndAdvisorsForBean(
 }
 
 protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
-    // 这里查找所有的切面
+    // 这里查找所有的切面 :
+    //      Advisor 这个接口的实现类
+    //      从当前BeanFactory中查找所有标记了@AspectJ的注解的bean
 	List<Advisor> candidateAdvisors = findCandidateAdvisors();
     
     List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
@@ -257,6 +259,124 @@ protected List<Advisor> findCandidateAdvisors() {
     if (this.aspectJAdvisorsBuilder != null) {
         // 从当前BeanFactory中查找所有标记了@AspectJ的注解的bean，并返回增强注解集合
         advisors.addAll(this.aspectJAdvisorsBuilder.buildAspectJAdvisors());
+    }
+    return advisors;
+}
+```
+
+
+
+```java
+/**
+ * Look for AspectJ-annotated aspect beans in the current bean factory,
+ * and return to a list of Spring AOP Advisors representing them.
+ * <p>Creates a Spring Advisor for each AspectJ advice method.
+ * @return the list of {@link org.springframework.aop.Advisor} beans
+ * @see #isEligibleBean
+ */
+// 查找所有 AspectJ-annotated 的 aspect beans
+public List<Advisor> buildAspectJAdvisors() {
+    // 在实例化之前已经找过一遍   
+    // ps:postProcessBeforeInstantiation里面的shouldSkip() 
+    // shouldSkip() 会缓存 aspectBeanNames 
+    List<String> aspectNames = this.aspectBeanNames;
+
+    if (aspectNames == null) {
+        synchronized (this) {
+            aspectNames = this.aspectBeanNames;
+            if (aspectNames == null) {
+                
+                List<Advisor> advisors = new ArrayList<>();
+                aspectNames = new ArrayList<>();
+                
+                // 获取所有的 beanName 
+                String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
+                    this.beanFactory, Object.class, true, false);
+                
+               // 循环遍历所有的 beanName 找出对应的增强方法 
+                for (String beanName : beanNames) {
+                    // 当前 beanName 是否在<aop:include name=""/> 里面 
+                    if (!isEligibleBean(beanName)) {
+                        continue;
+                    }
+                    
+                    // We must be careful not to instantiate beans eagerly as in this case they
+                    // would be cached by the Spring container but would not have been weaved.
+                    
+                    Class<?> beanType = this.beanFactory.getType(beanName);
+                    if (beanType == null) {
+                        continue;
+                    }
+                    
+                    // 没有 @Aspect 和 名字 ajc$ 这个开头的 都是 aspect bean
+                    if (this.advisorFactory.isAspect(beanType)) {
+                        // 后面缓存名称
+                        aspectNames.add(beanName);
+                        // 封装 Aspect信息类
+                        AspectMetadata amd = new AspectMetadata(beanType, beanName);
+                        // 
+                        if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) {
+                            MetadataAwareAspectInstanceFactory factory =
+                                new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
+                            
+                            // 解析标记 AspectJ 注解中的增强方法 
+                            List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
+/**
+ * 切面实例化模型简介
+ *
+ * singleton: 即切面只会有一个实例；
+ * perthis  : 每个切入点表达式匹配的连接点对应的AOP对象都会创建一个新切面实例；
+ *            使用@Aspect("perthis(切入点表达式)")指定切入点表达式；
+ *            例如: @Aspect("perthis(this(com.lyc.cn.v2.day04.aspectj.Dog))")
+ * pertarget: 每个切入点表达式匹配的连接点对应的目标对象都会创建一个新的切面实例；
+ *            使用@Aspect("pertarget(切入点表达式)")指定切入点表达式；
+ *            例如:
+ *
+ * 默认是singleton实例化模型，Schema风格只支持singleton实例化模型，
+ *  而@AspectJ风格支持这三种实例化模型。
+ */
+                        	// 切面 singleton实例化模型处理
+                            if (this.beanFactory.isSingleton(beanName)) {
+                                // 缓存对应的切面
+                                this.advisorsCache.put(beanName, classAdvisors);
+                            } else {
+                                // 非单例缓存 factory 
+                                this.aspectFactoryCache.put(beanName, factory);
+                            }
+                            advisors.addAll(classAdvisors);
+                        }  else {
+                            // Per target or per this.
+                            // 切面 perthis或pertarget实例化模型处理
+                            if (this.beanFactory.isSingleton(beanName)) {
+                                throw new IllegalArgumentException("Bean with name '" + beanName +
+                                                                   "' is a singleton, but aspect instantiation model is not singleton");
+                            }
+                            MetadataAwareAspectInstanceFactory factory =
+                                new PrototypeAspectInstanceFactory(this.beanFactory, beanName);
+                            this.aspectFactoryCache.put(beanName, factory);
+                            advisors.addAll(this.advisorFactory.getAdvisors(factory));
+                        }
+                    }
+                }
+                this.aspectBeanNames = aspectNames;
+                return advisors;
+            }
+        }
+    }
+
+    if (aspectNames.isEmpty()) {
+        return Collections.emptyList();
+    }
+    List<Advisor> advisors = new ArrayList<>();
+    for (String aspectName : aspectNames) {
+        List<Advisor> cachedAdvisors = this.advisorsCache.get(aspectName);
+        if (cachedAdvisors != null) {
+            advisors.addAll(cachedAdvisors);
+        }
+        else {
+            MetadataAwareAspectInstanceFactory factory = this.aspectFactoryCache.get(aspectName);
+            advisors.addAll(this.advisorFactory.getAdvisors(factory));
+        }
     }
     return advisors;
 }

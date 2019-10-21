@@ -104,6 +104,24 @@ List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
 if (this.beanFactory.isSingleton(beanName)) {
     this.advisorsCache.put(beanName, classAdvisors);
 }
+
+// Create proxy here if we have a custom TargetSource.
+// Suppresses unnecessary default instantiation of the target bean:
+// The TargetSource will handle target instances in a custom fashion.
+// 当前 bean 实现 TargetSource接口的
+// TargetSource 自定义 aop 的创建
+TargetSource targetSource = getCustomTargetSource(beanClass, beanName);
+if (targetSource != null) {
+    if (StringUtils.hasLength(beanName)) {
+        this.targetSourcedBeans.add(beanName);
+    }
+    // 获取增强和切面
+    Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(beanClass, beanName, targetSource);
+    // 创建代理
+    Object proxy = createProxy(beanClass, beanName, specificInterceptors, targetSource);
+    this.proxyTypes.put(cacheKey, proxy.getClass());
+    return proxy;
+}
 ```
 
 总结：缓存当前类是否需要 被 aop 代理--判断标准 （当前类是否是 切面，切入点，增强 这些类）
@@ -113,6 +131,10 @@ if (this.beanFactory.isSingleton(beanName)) {
 
 
  **postProcessAfterInitialization方法 ：**
+
+缓存：this.advisedBeans.put(cacheKey, Boolean.TRUE);
+
+​	和    this.proxyTypes.put(cacheKey, proxy.getClass());
 
 首先如果是 切面类 在 isInfrastructureClass(beanClass) 里面直接返回了
 
@@ -130,7 +152,7 @@ public Object postProcessAfterInitialization(@Nullable Object bean, String beanN
         Object cacheKey = getCacheKey(bean.getClass(), beanName);
         // 这个好像不太会用：切面类里面一般不会有循环依赖
         if (!this.earlyProxyReferences.contains(cacheKey)) {
-            // 包装bean
+            // 如果它适合被代理，则需要封装指定 bean 
             return wrapIfNecessary(bean, beanName, cacheKey);
         }
     }
@@ -151,12 +173,16 @@ public Object postProcessAfterInitialization(@Nullable Object bean, String beanN
  */
 protected Object wrapIfNecessary(Object bean, String beanName, Object cacheKey) {
     // 1、如果已经处理过或者不需要创建代理，则返回
+    // TargetSource接口已经处理过的不需要再次处理 
     if (StringUtils.hasLength(beanName) && this.targetSourcedBeans.contains(beanName)) {
         return bean;
     }
+    // 当前类不需要增强
     if (Boolean.FALSE.equals(this.advisedBeans.get(cacheKey))) {
         return bean;
     }
+    // 给定的 bean 类是否代表一个基础设施类， 基础设施类不应代理，
+    // 或者配置了指定 bean 不需要自动代理  
     if (isInfrastructureClass(bean.getClass()) || shouldSkip(bean.getClass(), beanName)) {
         this.advisedBeans.put(cacheKey, Boolean.FALSE);
         return bean;
@@ -181,3 +207,4 @@ protected Object wrapIfNecessary(Object bean, String beanName, Object cacheKey) 
 }
 ```
 
+![](img/20191020214016.png)

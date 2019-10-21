@@ -236,7 +236,7 @@ protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName
     //      Advisor 这个接口的实现类
     //      从当前BeanFactory中查找所有标记了@AspectJ的注解的bean
 	List<Advisor> candidateAdvisors = findCandidateAdvisors();
-    
+    // 寻找匹配的增强器--匹配对的类
     List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
     
     extendAdvisors(eligibleAdvisors);
@@ -491,6 +491,58 @@ private AspectJExpressionPointcut getPointcut(Method candidateAdviceMethod, Clas
     return ajexp;
 }
 
+```
+
+**寻找匹配的增强器**:
+
+获取到的bean 不易顶匹配增强器 这里就是匹配
+
+```java
+findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
+
+protected List<Advisor> findAdvisorsThatCanApply(
+			List<Advisor> candidateAdvisors, Class<?> beanClass, String beanName) {
+
+    ProxyCreationContext.setCurrentProxiedBeanName(beanName);
+    try {
+        // 当前类匹配对应的切面
+        return AopUtils.findAdvisorsThatCanApply(candidateAdvisors, beanClass);
+    }
+    finally {
+        ProxyCreationContext.setCurrentProxiedBeanName(null);
+    }
+}
+
+//
+public static List<Advisor> findAdvisorsThatCanApply(List<Advisor> candidateAdvisors, Class<?> clazz) {
+    // 增强器为空
+    if (candidateAdvisors.isEmpty()) {
+        return candidateAdvisors;
+    }
+    // 
+    List<Advisor> eligibleAdvisors = new ArrayList<>();
+    for (Advisor candidate : candidateAdvisors) {
+        // 处理 引介增强的
+        if (candidate instanceof IntroductionAdvisor && canApply(candidate, clazz)) {
+            eligibleAdvisors.add(candidate);
+        }
+    }
+    boolean hasIntroductions = !eligibleAdvisors.isEmpty();
+    for (Advisor candidate : candidateAdvisors) {
+        if (candidate instanceof IntroductionAdvisor) {
+            // already processed
+            // 引介增强的已经处理过了
+            continue;
+        }
+        if (canApply(candidate, clazz, hasIntroductions)) {
+            // 对应普通bean 处理
+            eligibleAdvisors.add(candidate);
+        }
+    }
+    return eligibleAdvisors;
+}
+
+    
 ```
 
 

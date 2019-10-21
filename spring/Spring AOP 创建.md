@@ -208,3 +208,57 @@ protected Object wrapIfNecessary(Object bean, String beanName, Object cacheKey) 
 ```
 
 ![](img/20191020214016.png)
+
+
+
+### 获取增强器
+
+
+
+```java
+@Override
+@Nullable
+protected Object[] getAdvicesAndAdvisorsForBean(
+    Class<?> beanClass, String beanName, @Nullable TargetSource targetSource) {
+	// 寻找具备条件的增强器
+    List<Advisor> advisors = findEligibleAdvisors(beanClass, beanName);
+    // 找不到对应的增强器
+    if (advisors.isEmpty()) {
+        // 返回空
+        return DO_NOT_PROXY;
+    }
+    // 返回对应的增强器
+    return advisors.toArray();
+}
+
+protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
+    // 这里查找所有的切面
+	List<Advisor> candidateAdvisors = findCandidateAdvisors();
+    
+    List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
+    
+    extendAdvisors(eligibleAdvisors);
+    
+    if (!eligibleAdvisors.isEmpty()) {
+        eligibleAdvisors = sortAdvisors(eligibleAdvisors);
+    }
+    return eligibleAdvisors;
+}
+
+
+@Override
+protected List<Advisor> findCandidateAdvisors() {
+    // Add all the Spring advisors found according to superclass rules.
+    // 当使用注解方式配置 AOP 的时候并不是丢弃了对 XML 配置的支持， 
+    // 这里查找所有的切面 :
+    //		Advisor 这个接口的实现类
+    List<Advisor> advisors = super.findCandidateAdvisors();
+    // Build Advisors for all AspectJ aspects in the bean factory.
+    if (this.aspectJAdvisorsBuilder != null) {
+        // 从当前BeanFactory中查找所有标记了@AspectJ的注解的bean，并返回增强注解集合
+        advisors.addAll(this.aspectJAdvisorsBuilder.buildAspectJAdvisors());
+    }
+    return advisors;
+}
+```
+

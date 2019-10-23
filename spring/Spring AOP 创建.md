@@ -563,8 +563,6 @@ public static List<Advisor> findAdvisorsThatCanApply(List<Advisor> candidateAdvi
     }
     return eligibleAdvisors;
 }
-
-    
 ```
 
 
@@ -884,6 +882,9 @@ retVal = invocation.proceed();
 public Object proceed() throws Throwable {
     //	We start with an index of -1 and increment early.
     if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
+        // 如果调用链为空，则直接调用目标方法
+        // jdk反射的形式调用 
+        // (方法) method.invoke(target （对象）, args （参数）)
         return invokeJoinpoint();
     }
 
@@ -922,7 +923,7 @@ public Object proceed() throws Throwable {
 
 1.  ExposeInvocationInterceptor 
 
-   ```
+   ```java
    public Object invoke(MethodInvocation mi) throws Throwable {
        MethodInvocation oldInvocation = invocation.get();
        invocation.set(mi);
@@ -938,7 +939,7 @@ public Object proceed() throws Throwable {
 
 2.  AspectJAfterThrowingAdvice 
 
-   ```
+   ```java
    public Object invoke(MethodInvocation mi) throws Throwable {
        try {
            // 继续递归调用拦截器链
@@ -1073,7 +1074,7 @@ public Object proceed() throws Throwable {
 
 9. 前置增强
 
-   ```
+   ```java
    public Object invoke(MethodInvocation mi) throws Throwable {
        // 调用前置增强
        this.advice.before(mi.getMethod(), mi.getArguments(), mi.getThis());
@@ -1188,10 +1189,3 @@ public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException 
 
 
 
-### 创建JDK代理还是cglib代理
-
-```java
-
-```
-
-​	

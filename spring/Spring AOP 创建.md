@@ -97,7 +97,7 @@ this.cachedAdvisorBeanNames = advisorNames
 this.beanFactory.getBean(name, Advisor.class)
 // 这里处理 @Aspect 注解的    
 this.aspectJAdvisorsBuilder.buildAspectJAdvisors()   
-// 缓存名字
+// 缓存@Aspect 注解的名字
 aspectNames = this.aspectBeanNames 
 // 缓存--找到切面    
 List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
@@ -318,7 +318,7 @@ public List<Advisor> buildAspectJAdvisors() {
                         aspectNames.add(beanName);
                         // 封装 Aspect信息类
                         AspectMetadata amd = new AspectMetadata(beanType, beanName);
-                        // 
+                        // 切面是单例的
                         if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) {
                             MetadataAwareAspectInstanceFactory factory =
                                 new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
@@ -468,11 +468,11 @@ public Advisor getAdvisor(Method candidateAdviceMethod, MetadataAwareAspectInsta
 // 切点信息的获取 
 @Nullable
 private AspectJExpressionPointcut getPointcut(Method candidateAdviceMethod, Class<?> candidateAspectClass) {
-    // 按 顺序 Pointcut.class, Around.class, 
+    // 在方法上按顺序找 Pointcut.class, Around.class, 
     // Before.class, After.class, AfterReturning.class, 
-    // AfterThrowing.class
+    // AfterThrowing.class 注解信息
     // 找到第一个 Pointcut 的注解信息
-    // @Pointcut 可以和 @Before 在一起
+    // @Pointcut 
     AspectJAnnotation<?> aspectJAnnotation = AbstractAspectJAdvisorFactory.findAspectJAnnotationOnMethod(candidateAdviceMethod);
     // 没有对应的注解信息返回null
     if (aspectJAnnotation == null) {
@@ -484,6 +484,7 @@ private AspectJExpressionPointcut getPointcut(Method candidateAdviceMethod, Clas
     // 提取得到的注解中的表达式，如:
     // @Pointcut("execution(* com.qin.demo.proxy.Dog.*(..))")
     // 里面的 execution(* com.qin.demo.proxy.Dog.*(..)) 
+    // 或者 @Around("test()") 里面的 test()
     ajexp.setExpression(aspectJAnnotation.getPointcutExpression());
     if (this.beanFactory != null) {
         ajexp.setBeanFactory(this.beanFactory);
@@ -637,7 +638,7 @@ private Advice instantiateAdvice(AspectJExpressionPointcut pointcut) {
 }
 
 @Override
-	@Nullable
+@Nullable
 public Advice getAdvice(Method candidateAdviceMethod, AspectJExpressionPointcut expressionPointcut,
                         MetadataAwareAspectInstanceFactory aspectInstanceFactory, int declarationOrder, String aspectName) {
 	// aspect类的Class

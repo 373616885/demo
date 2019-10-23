@@ -39,7 +39,7 @@ private static BeanDefinition registerOrEscalateApcAsRequired(
 
     Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 	// 如果registry已经包含了AnnotationAwareAspectJAutoProxyCreator 
-    // 则按照优先级顺序安排
+    // 则按照优先级顺序安排 @Priority	
     if (registry.containsBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME)) {
         BeanDefinition apcDefinition = registry.getBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME);
         if (!cls.getName().equals(apcDefinition.getBeanClassName())) {
@@ -92,8 +92,11 @@ shouldSkip 里面 缓存  切面类的名称
 ```java
 // 这里缓存 实现 Aspect接口的
 this.cachedAdvisorBeanNames = advisorNames
+
 // 这里循环依赖的时候会缓存 this.earlyProxyReferences.put(cacheKey, bean);
 // addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+// SmartInstantiationAwareBeanPostProcessor 这个接口要执行getEarlyBeanReference方法
+// 获取提前代理的对象    
 this.beanFactory.getBean(name, Advisor.class)
 // 这里处理 @Aspect 注解的    
 this.aspectJAdvisorsBuilder.buildAspectJAdvisors()   
@@ -238,10 +241,28 @@ protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName
 	List<Advisor> candidateAdvisors = findCandidateAdvisors();
     // 寻找匹配的增强器--匹配对的类
     List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
-    
+    // 向通知器列表中的首位添加 ExposeInvocationInterceptor.ADVISOR
+    // advisors.add(0, ExposeInvocationInterceptor.ADVISOR);
+    // 拦截默认 true 都拦截 
+    // 功能暴露 MethodInvocation 对象到 ThreadLocal 中
+    // 直接通过调用 currentInvocation 方法取出
+    /*
+    @Override
+	public Object invoke(MethodInvocation mi) throws Throwable {
+		MethodInvocation oldInvocation = invocation.get();
+		invocation.set(mi);
+		try {
+			return mi.proceed();
+		}
+		finally {
+			invocation.set(oldInvocation);
+		}
+	}
+	*/
     extendAdvisors(eligibleAdvisors);
     
     if (!eligibleAdvisors.isEmpty()) {
+        // 排序 @Priority 这个注解比较优先级
         eligibleAdvisors = sortAdvisors(eligibleAdvisors);
     }
     return eligibleAdvisors;
@@ -514,7 +535,7 @@ protected List<Advisor> findAdvisorsThatCanApply(
     }
 }
 
-//
+// 当前类是否匹配
 public static List<Advisor> findAdvisorsThatCanApply(List<Advisor> candidateAdvisors, Class<?> clazz) {
     // 增强器为空
     if (candidateAdvisors.isEmpty()) {
@@ -1073,5 +1094,54 @@ public Object proceed() throws Throwable {
 
 
 
+### 创建代理
 
+在获取了所有对应 bean 的增强器后，便可以进行代理的创建
+
+```java
+//创建代理
+Object proxy = createProxy(
+					bean.getClass(),
+    beanName, specificInterceptors, 
+    new SingletonTargetSource(bean));
+
+protected Object createProxy(Class<?> beanClass, @Nullable String beanName,
+			@Nullable Object[] specificInterceptors, TargetSource targetSource) {
+	
+    // 设置一个org.springframework.aop.framework.autoproxy.AutoProxyUtils.originalTargetClass
+    // 属性 
+    if (this.beanFactory instanceof ConfigurableListableBeanFactory) {
+        AutoProxyUtils.exposeTargetClass((ConfigurableListableBeanFactory) this.beanFactory, beanName, beanClass);
+    }
+
+    ProxyFactory proxyFactory = new ProxyFactory();
+    // 获取当前类中相关属性 
+    proxyFactory.copyFrom(this);
+	// 决定对于给定的 bean 是否应该使用 targetClass 而不是它的接口代理， 
+    // 检查 proxyTargeClass 设置以及 preserveTargetClass 属性 
+    if (!proxyFactory.isProxyTargetClass()) {
+        if (shouldProxyTargetClass(beanClass, beanName)) {
+            proxyFactory.setProxyTargetClass(true);
+        }
+        else {
+            //添加代理接口 
+            evaluateProxyInterfaces(beanClass, proxyFactory);
+        }
+    }
+	
+    Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
+    proxyFactory.addAdvisors(advisors);
+    proxyFactory.setTargetSource(targetSource);
+    customizeProxyFactory(proxyFactory);
+
+    proxyFactory.setFrozen(this.freezeProxy);
+    if (advisorsPreFiltered()) {
+        proxyFactory.setPreFiltered(true);
+    }
+
+    return proxyFactory.getProxy(getProxyClassLoader());
+}
+
+
+```
 

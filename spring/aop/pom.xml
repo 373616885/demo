@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.qin</groupId>
-    <artifactId>demo</artifactId>
+    <artifactId>aop</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
 
-    <name>demo</name>
+    <name>aop</name>
     <description>Demo project for Spring Boot</description>
 
     <properties>

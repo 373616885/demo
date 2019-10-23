@@ -1108,40 +1108,90 @@ Object proxy = createProxy(
 protected Object createProxy(Class<?> beanClass, @Nullable String beanName,
 			@Nullable Object[] specificInterceptors, TargetSource targetSource) {
 	
-    // 设置一个org.springframework.aop.framework.autoproxy.AutoProxyUtils.originalTargetClass
-    // 属性 
+    // 设置一个org.springframework.aop.framework.autoproxy.AutoProxyUtils.originalTargetClass属性
+    // 将需要被代理的对象暴露出来
     if (this.beanFactory instanceof ConfigurableListableBeanFactory) {
         AutoProxyUtils.exposeTargetClass((ConfigurableListableBeanFactory) this.beanFactory, beanName, beanClass);
     }
-
+	// 创建代理工厂
     ProxyFactory proxyFactory = new ProxyFactory();
-    // 获取当前类中相关属性 
+    // 复制proxyTargetClass，exposeProxy等属性
     proxyFactory.copyFrom(this);
 	// 决定对于给定的 bean 是否应该使用 targetClass 而不是它的接口代理， 
     // 检查 proxyTargeClass 设置以及 preserveTargetClass 属性 
+    // 不使用Cglib代理目标类
     if (!proxyFactory.isProxyTargetClass()) {
+        
+        // 如果当前设置了不使用Cglib代理目标类，则判断目标类是否设置了preserveTargetClass属性，
+    	// 如果设置了，则还是强制使用Cglib代理目标类；如果没有设置，则判断目标类是否实现了相关接口，
+    	// 没有设置，则还是使用Cglib代理。需要注意的是Spring默认使用的是Jdk代理来织入切面逻辑。
+        
+        // 判断目标类是否设置了preserveTargetClass属性,设置了就强制使用 Cglib代理目标类
         if (shouldProxyTargetClass(beanClass, beanName)) {
             proxyFactory.setProxyTargetClass(true);
         }
         else {
-            //添加代理接口 
+            // 判断目标类是否实现了相关接口
             evaluateProxyInterfaces(beanClass, proxyFactory);
         }
     }
-	
+    
+	// 将需要织入的切面逻辑都转换为Advisor对象
     Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
     proxyFactory.addAdvisors(advisors);
     proxyFactory.setTargetSource(targetSource);
+    // 提供的hook方法，供子类实现以实现对代理工厂的定制
     customizeProxyFactory(proxyFactory);
 
     proxyFactory.setFrozen(this.freezeProxy);
+    
+    // 当前判断逻辑默认返回false，子类可进行重写，对于AnnotationAwareAspectJAutoProxyCreator，
+    // 其重写了该方法返回true，因为其已经对获取到的Advisor进行了过滤，后面不需要在对目标类进行重新
+    // 匹配了
     if (advisorsPreFiltered()) {
+        // 默认已经匹配了，就不需要再次匹配
         proxyFactory.setPreFiltered(true);
     }
-
+	 // 生成代理类
     return proxyFactory.getProxy(getProxyClassLoader());
 }
+```
 
+### 生成代理类
+
+```java
+public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException {
+    // 判断当前类是否需要进行运行时优化，或者是指定了使用Cglib代理的方式，再或者是目标类没有用户提供的
+    // 相关接口，则使用Cglib代理实现代理逻辑的织入
+    if (config.isOptimize() || config.isProxyTargetClass() || 
+        hasNoUserSuppliedProxyInterfaces(config)) {
+        Class<?> targetClass = config.getTargetClass();
+        if (targetClass == null) {
+            throw new AopConfigException("TargetSource cannot determine target class: " 
+                + "Either an interface or a target is required for proxy creation.");
+        }
+        // 如果被代理的类是一个接口，
+        // 或者被代理的类是使用Jdk代理生成的类，(继承了 Proxy 或者已经缓存的 jdk代理)
+        // 此时还是使用Jdk代理
+        if (targetClass.isInterface() || Proxy.isProxyClass(targetClass)) {
+            return new JdkDynamicAopProxy(config);
+        }
+        
+        // 返回Cglib代理织入类对象
+        return new ObjenesisCglibAopProxy(config);
+    } else {
+        // 返回Jdk代理织入类对象
+        return new JdkDynamicAopProxy(config);
+    }
+}
+```
+
+
+
+### 创建JDK代理还是cglib代理
+
+```java
 
 ```
 
+​	

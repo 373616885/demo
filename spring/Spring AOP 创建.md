@@ -108,13 +108,17 @@ if (this.beanFactory.isSingleton(beanName)) {
     this.advisorsCache.put(beanName, classAdvisors);
 }
 
+
 // Create proxy here if we have a custom TargetSource.
 // Suppresses unnecessary default instantiation of the target bean:
 // The TargetSource will handle target instances in a custom fashion.
-// 当前 bean 实现 TargetSource接口的
-// TargetSource 自定义 aop 的创建
+// 对应的代理内部类（aop AnnotationAwareAspectJAutoProxyCreator）
+// setCustomTargetSourceCreators 自定义有生成的类
+// 配置自定义的TargetSourceCreator进行TargetSource创建 
+// 当我们配置TargetSourceCreator进行自定义TargetSource创建时，并在会创建代理对象过程中，中断默认Spring创建流程
 TargetSource targetSource = getCustomTargetSource(beanClass, beanName);
 if (targetSource != null) {
+    // 如果targetSource不为null 添加到targetSourcedBeans缓存，并创建AOP代理对象  
     if (StringUtils.hasLength(beanName)) {
         this.targetSourcedBeans.add(beanName);
     }
@@ -122,6 +126,7 @@ if (targetSource != null) {
     Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(beanClass, beanName, targetSource);
     // 创建代理
     Object proxy = createProxy(beanClass, beanName, specificInterceptors, targetSource);
+    // 将代理类型放入proxyTypes从而允许后续的predictBeanType()调用获取 
     this.proxyTypes.put(cacheKey, proxy.getClass());
     return proxy;
 }
@@ -235,9 +240,10 @@ protected Object[] getAdvicesAndAdvisorsForBean(
 }
 
 protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
-    // 这里查找所有的切面 :
-    //      Advisor 这个接口的实现类
-    //      从当前BeanFactory中查找所有标记了@AspectJ的注解的bean
+    // 事务的类直接执行当前类的 findCandidateAdvisors
+    // 这里查找所有的切面 : 执行的类在子类 AnnotationAwareAspectJAutoProxyCreator 中的 findCandidateAdvisors
+    //     1. Advisor 这个接口的实现类
+    //     2. 从当前BeanFactory中查找所有标记了@AspectJ的注解的bean
 	List<Advisor> candidateAdvisors = findCandidateAdvisors();
     // 寻找匹配的增强器--匹配对的类
     List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);

@@ -558,7 +558,7 @@ private class TransactionAttributeSourceClassFilter implements ClassFilter {
         TransactionAttributeSource tas = getTransactionAttributeSource();
         // AnnotationTransactionAttributeSource 的 SpringTransactionAnnotationParser
         // 主要判断类和注解是否已 java. 开头的
-        // 符合 java 标准的类都过滤
+        // 不符合 java 标准的类都过滤
         return (tas == null || tas.isCandidateClass(clazz));
     }
 }
@@ -574,37 +574,50 @@ public boolean matches(Method method, Class<?> targetClass) {
     return (tas == null || tas.getTransactionAttribute(method, targetClass) != null);
 }
 
+```
+
+  **事物标签（注解）提取**
+
+```java
+
 // tas.getTransactionAttribute(method, targetClass)
 // AnnotationTransactionAttributeSource 的 getTransactionAttribute
 @Override
 @Nullable
 public TransactionAttribute getTransactionAttribute(Method method, @Nullable Class<?> targetClass) {
-    // 
+    // 如果是 Object 的方法就返回空
     if (method.getDeclaringClass() == Object.class) {
         return null;
     }
-
+    
     // First, see if we have a cached value.
+    // 检查是否缓存过该方法上的事物标签
     Object cacheKey = getCacheKey(method, targetClass);
     TransactionAttribute cached = this.attributeCache.get(cacheKey);
     if (cached != null) {
         // Value will either be canonical value indicating there is no transaction attribute,
         // or an actual transaction attribute.
+        // 判断缓存的事物标签,如果缓存的方法上没有具体的事物标签,返回null;否则返回对应的事物标签
         if (cached == NULL_TRANSACTION_ATTRIBUTE) {
             return null;
-        }
-        else {
+        } else {
             return cached;
         }
-    }
-    else {
+    } else {
         // We need to work it out.
+        // 如果没有缓存的事物标签,则重新提取事物标签并缓存
+        // 提取事物标签
+        /***
+         * 分为了两个部分：从给定的类或方法上提取事物注解。
+         * 		方法上的事物注解是优先于类上的事物注解的		
+         */
         TransactionAttribute txAttr = computeTransactionAttribute(method, targetClass);
         // Put it in the cache.
         if (txAttr == null) {
+            // 空就缓存 NULL_TRANSACTION_ATTRIBUTE
             this.attributeCache.put(cacheKey, NULL_TRANSACTION_ATTRIBUTE);
-        }
-        else {
+        }  else {
+            // 
             String methodIdentification = ClassUtils.getQualifiedMethodName(method, targetClass);
             if (txAttr instanceof DefaultTransactionAttribute) {
                 ((DefaultTransactionAttribute) txAttr).setDescriptor(methodIdentification);
@@ -616,13 +629,8 @@ public TransactionAttribute getTransactionAttribute(Method method, @Nullable Cla
         }
         return txAttr;
     }
-}
-
-
+}    
 ```
-
- 
-
 
 
 

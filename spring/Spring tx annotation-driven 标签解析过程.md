@@ -567,6 +567,17 @@ private class TransactionAttributeSourceClassFilter implements ClassFilter {
 // TransactionAttributeSourcePointcut  实例的 matches
 @Override
 public boolean matches(Method method, Class<?> targetClass) {
+    // 这里的getTransactionAttribute 接口在 BeanFactoryTransactionAttributeSourceAdvisor 里面实现的 
+    /**
+    private final TransactionAttributeSourcePointcut pointcut = new TransactionAttributeSourcePointcut() {
+		@Override
+		@Nullable
+		//这里 TransactionAttributeSourcePointcut 的 abstract getTransactionAttributeSource
+		protected TransactionAttributeSource getTransactionAttributeSource() {
+			return transactionAttributeSource;
+		}
+	};
+    */ 
     // 这里获取 AnnotationTransactionAttributeSource 这和实例-之前注入的
     TransactionAttributeSource tas = getTransactionAttributeSource();
     // 执行AnnotationTransactionAttributeSource 的 getTransactionAttribute
@@ -582,6 +593,7 @@ public boolean matches(Method method, Class<?> targetClass) {
 
 // tas.getTransactionAttribute(method, targetClass)
 // AnnotationTransactionAttributeSource 的 getTransactionAttribute
+// 在父类的 AbstractFallbackTransactionAttributeSource 里面
 @Override
 @Nullable
 public TransactionAttribute getTransactionAttribute(Method method, @Nullable Class<?> targetClass) {
@@ -593,7 +605,9 @@ public TransactionAttribute getTransactionAttribute(Method method, @Nullable Cla
     // First, see if we have a cached value.
     // 检查是否缓存过该方法上的事物标签
     Object cacheKey = getCacheKey(method, targetClass);
+    // 缓存中查找
     TransactionAttribute cached = this.attributeCache.get(cacheKey);
+    // 存在缓存
     if (cached != null) {
         // Value will either be canonical value indicating there is no transaction attribute,
         // or an actual transaction attribute.
@@ -617,7 +631,7 @@ public TransactionAttribute getTransactionAttribute(Method method, @Nullable Cla
             // 空就缓存 NULL_TRANSACTION_ATTRIBUTE
             this.attributeCache.put(cacheKey, NULL_TRANSACTION_ATTRIBUTE);
         }  else {
-            // 
+            // 得到完整的方法名称：类名 + 方法名
             String methodIdentification = ClassUtils.getQualifiedMethodName(method, targetClass);
             if (txAttr instanceof DefaultTransactionAttribute) {
                 ((DefaultTransactionAttribute) txAttr).setDescriptor(methodIdentification);
@@ -625,12 +639,204 @@ public TransactionAttribute getTransactionAttribute(Method method, @Nullable Cla
             if (logger.isTraceEnabled()) {
                 logger.trace("Adding transactional method '" + methodIdentification + "' with attribute: " + txAttr);
             }
+            // 保存缓存
             this.attributeCache.put(cacheKey, txAttr);
         }
         return txAttr;
     }
 }    
 ```
+
+**提取事物标签** 
+
+```java
+@Nullable
+protected TransactionAttribute computeTransactionAttribute(Method method, @Nullable Class<?> targetClass) {
+    // Don't allow no-public methods as required.
+    // AnnotationTransactionAttributeSource 的 publicMethodsOnly 只允许公共的方法默认是 true
+    // 只允许公共的方法
+    if (allowPublicMethodsOnly() && !Modifier.isPublic(method.getModifiers())) {
+        return null;
+    }
+
+    // The method may be on an interface, but we need attributes from the target class.
+    // If the target class is null, the method will be unchanged.
+    // method 代表接口中的方法， specificMethod 代表实现类中的方法
+    // 如果method是一个接口,那么根据该接口和目标类,找到目标类上的对应的方法(如果有)
+    // 如果没有目标对象的 该方法没有变化
+    // 注意:该原始方法不一定是接口方法
+    Method specificMethod = AopUtils.getMostSpecificMethod(method, targetClass);
+
+    // First try is the method in the target class.
+    // 首先尝试从目标类的方法上提取事物标签
+    TransactionAttribute txAttr = findTransactionAttribute(specificMethod);
+    if (txAttr != null) {
+        return txAttr;
+    }
+
+    // Second try is the transaction attribute on the target class.
+    // 其次,尝试从目标类上提取事物标签
+    txAttr = findTransactionAttribute(specificMethod.getDeclaringClass());
+    if (txAttr != null && ClassUtils.isUserLevelMethod(method)) {
+        return txAttr;
+    }
+	// 如果从目标类上提取的方法,不等于原始方法--就是存在接口则到接口中去寻找
+    if (specificMethod != method) {
+        // Fallback is to look at the original method.
+        // 首先尝试从原始方法上提取事物标签
+        txAttr = findTransactionAttribute(method);
+        if (txAttr != null) {
+            return txAttr;
+        }
+        // Last fallback is the class of the original method.
+        // 最后尝试从原始方法的实现类方法上提取事物标签
+        txAttr = findTransactionAttribute(method.getDeclaringClass());
+        if (txAttr != null && ClassUtils.isUserLevelMethod(method)) {
+            return txAttr;
+        }
+    }
+
+    return null;
+}
+```
+
+**总结：**
+
+**如果对应类的方法上存在事务属性，则使用方法上的属性，否则使用类上的属性。**
+
+**如果还没有再搜寻接口中的方法，还没有搜寻接口的类上面的声明。**
+
+```java
+/**
+ * 从给定的方法上提取事物标签
+ * @param method the method to retrieve the attribute for
+ * @return
+ */
+@Override
+@Nullable
+protected TransactionAttribute findTransactionAttribute(Method method) {
+    return determineTransactionAttribute(method);
+}
+
+/**
+ * 从给定的类上提取事物标签
+ * @param clazz the class to retrieve the attribute for
+ * @return
+ */
+@Override
+@Nullable
+protected TransactionAttribute findTransactionAttribute(Class<?> clazz) {
+    return determineTransactionAttribute(clazz);
+}
+```
+
+这两个方法最终会调用同一个方法来获取事物标签 
+
+```java
+@Nullable
+protected TransactionAttribute determineTransactionAttribute(AnnotatedElement element) {
+    for (TransactionAnnotationParser parser : this.annotationParsers) {
+        TransactionAttribute attr = parser.parseTransactionAnnotation(element);
+        if (attr != null) {
+            return attr;
+        }
+    }
+    return null;
+}
+```
+
+这里 三个事物注解转换器，SpringTransactionAnnotationParser、JtaTransactionAnnotationParser、Ejb3TransactionAnnotationParser 。
+
+JtaTransactionAnnotationParser 这个是jta的事务注解处理
+
+Ejb3TransactionAnnotationParser 这个是ejb的事务注解处理
+
+Spring 使用  SpringTransactionAnnotationParser  处理Spring 的 Transactional 注解
+
+**解析事务 Transactional 标签**
+
+```java
+public TransactionAttribute parseTransactionAnnotation(AnnotatedElement ae) {
+    // 1.提取事物注解标签（该方法较长就不粘贴了，感兴趣的自己看一下，比较简单）
+    AnnotationAttributes attributes = AnnotatedElementUtils.findMergedAnnotationAttributes(
+            ae,
+            Transactional.class,
+            false,
+            false);
+    // 2.解析事物标签
+    if (attributes != null) {
+        return parseTransactionAnnotation(attributes);
+    }
+    else {
+        return null;
+    }
+}
+```
+
+```java
+protected TransactionAttribute parseTransactionAnnotation(AnnotationAttributes attributes) {
+    RuleBasedTransactionAttribute rbta = new RuleBasedTransactionAttribute();
+	// 1.解析propagation属性 --spring的事务行为
+    Propagation propagation = attributes.getEnum("propagation");
+    rbta.setPropagationBehavior(propagation.value());
+    // 2.解析isolation属性-- 数据库的隔离级别
+    Isolation isolation = attributes.getEnum("isolation");
+    rbta.setIsolationLevel(isolation.value());
+    // 3.解析timeout属性
+    rbta.setTimeout(attributes.getNumber("timeout").intValue());
+    // 4.解析readOnly属性
+    rbta.setReadOnly(attributes.getBoolean("readOnly"));
+    // 5.解析value属性 -- 事务管理器
+    rbta.setQualifier(attributes.getString("value"));
+	// 6.解析rollbackFor属性
+    List<RollbackRuleAttribute> rollbackRules = new ArrayList<>();
+    for (Class<?> rbRule : attributes.getClassArray("rollbackFor")) {
+        rollbackRules.add(new RollbackRuleAttribute(rbRule));
+    }
+    // 7.解析rollbackForClassName属性
+    for (String rbRule : attributes.getStringArray("rollbackForClassName")) {
+        rollbackRules.add(new RollbackRuleAttribute(rbRule));
+    }
+    // 8.解析noRollbackFor属性
+    for (Class<?> rbRule : attributes.getClassArray("noRollbackFor")) {
+        rollbackRules.add(new NoRollbackRuleAttribute(rbRule));
+    }
+    // 9.解析noRollbackForClassName属性
+    for (String rbRule : attributes.getStringArray("noRollbackForClassName")) {
+        rollbackRules.add(new NoRollbackRuleAttribute(rbRule));
+    }
+    rbta.setRollbackRules(rollbackRules);
+
+    return rbta;
+}
+```
+
+
+
+自此我们完成了事务标签的解析，再回顾一下，我们在 InfrastructureAdvisorAutoProxyCreator 的postProcessAfterInitialization 方法 查找 Advisor 这个接口的实现类 BeanFactoryTransactionAttributeSourceAdvisor  里面的 transactionAttributeSource 属性 （AnnotationTransactionAttributeSource）   adviceBeanName 属性 （TransactionInterceptor）
+
+找到这个实现类后，匹配当前创建的类是否 含有事务的属性 ，含有则想aop一样增强，对应的增强就是注入的 Transactionlnterceptor 类型，也就是在Transactionlnterceptor  的invoke 方法中完成整个事务的逻辑
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

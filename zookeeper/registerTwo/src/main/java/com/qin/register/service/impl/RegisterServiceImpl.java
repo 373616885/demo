@@ -12,7 +12,7 @@ import java.util.concurrent.CountDownLatch;
 public class RegisterServiceImpl implements RegisterService {
 
     private final String CLIENT_PORT = "2181";
-    private final String ZK_IP = "localhost";
+    private final String ZK_IP = "47.100.185.77";//"localhost";
     private final Integer CONNECTION_TIMEOUT = 1000;
 
     private final static String REGISTRY_PATH = "/registry";

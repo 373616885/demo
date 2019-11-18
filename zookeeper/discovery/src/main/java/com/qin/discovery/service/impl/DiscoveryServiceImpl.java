@@ -19,12 +19,12 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     private List<String> load = Lists.newArrayList();
 
     private final String CLIENT_PORT = "2181";
-    private final String ZK_IP = "localhost";
+    private final String ZK_IP = "47.100.185.77";//"localhost";
     private final Integer CONNECTION_TIMEOUT = 1000;
 
-    private final static String REGISTRY_PATH = "/registry";
+    private static final String REGISTRY_PATH = "/registry";
 
-    private final static String SERVICE = "/service";
+    private static final String SERVICE = "/service";
 
     private ZooKeeper zk = null;
     private CountDownLatch latch = new CountDownLatch(1);
@@ -38,6 +38,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
                     if (Watcher.Event.EventType.None == event.getType() && null == event.getPath()) {
                         System.out.println("client Zookeeper session established");
                         updateLoad();
+                        //将count值减1
                         latch.countDown();
                     }
                 }
@@ -57,9 +58,8 @@ public class DiscoveryServiceImpl implements DiscoveryService {
                     System.out.println("client NodeChildrenChanged");
                 }
 
-
             });
-            //
+            // 等待当计数器的值为0时
             latch.await();
         } catch (Exception e) {
             e.printStackTrace();
@@ -72,7 +72,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
         List<String> newLoad = Lists.newArrayList();
 
         try {
-            List<String> children = zk.getChildren( SERVICE, event -> {
+            List<String> children = zk.getChildren(SERVICE, event -> {
                 if (Watcher.Event.EventType.NodeChildrenChanged == event.getType()
                         && StringUtils.equals(SERVICE, event.getPath())) {
                     System.out.println("zk.getChildre 的监听器发生变化");

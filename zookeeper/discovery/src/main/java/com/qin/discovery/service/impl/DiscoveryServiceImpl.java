@@ -18,7 +18,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
 
     private List<String> load = Lists.newArrayList();
 
-    private final String CLIENT_PORT = "2181";
+    private final String CLIENT_PORT = "2193";
     private final String ZK_IP = "47.100.185.77";//"localhost";
     private final Integer CONNECTION_TIMEOUT = 1000;
 

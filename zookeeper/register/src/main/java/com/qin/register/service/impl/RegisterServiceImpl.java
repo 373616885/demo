@@ -11,7 +11,7 @@ import java.util.concurrent.CountDownLatch;
 @Service("registerService")
 public class RegisterServiceImpl implements RegisterService {
 
-    private final String CLIENT_PORT = "2181";
+    private final String CLIENT_PORT = "2191";
     private final String ZK_IP = "47.100.185.77";
     private final Integer CONNECTION_TIMEOUT = 1000;
 

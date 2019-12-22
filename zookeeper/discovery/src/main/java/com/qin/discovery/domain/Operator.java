@@ -1,7 +1,10 @@
 package com.qin.discovery.domain;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.io.Serializable;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Operator implements Serializable {
 	
 	private static final long serialVersionUID = -8058487976097187377L;

@@ -1,17 +1,19 @@
 package com.qin.base;
 
-import java.util.HashMap;
+import java.util.*;
 
 public class MapBase {
 
     public static void main(String[] args) throws InterruptedException {
-        int MAXIMUM_CAPACITY = 1 << 30;
-        System.out.println(MAXIMUM_CAPACITY);
-        System.out.println((MAXIMUM_CAPACITY-1)*2);
-        System.out.println(Integer.MAX_VALUE);
-        HashMap<Integer,Integer> map = new HashMap<>(16);
-        map.put(1, 1);
-        System.out.println(map);
+        ArrayList<Integer> list = new ArrayList<>(4);
+        list.add(1);
+        list.add(2);
+        list.add(3);
+        list.add(4);
+        list.add(5);
+        System.out.println(list);
     }
+
+
 }
 

@@ -125,3 +125,131 @@ private void grow(int minCapacity) {
 
 
 
+### Vector 
+
+其实和ArrayList 差不多只是 在ArrayList 操作法上加上 synchronized 避免多线程同时写而引起的不一致性
+
+```java
+// 元素
+protected Object[] elementData;
+// 个数 和 ArrayList 的 size 一样
+protected int elementCount;
+// 初始化大小默认10
+public Vector() {
+    this(10);
+}
+// initialCapacity 初始容量
+public Vector(int initialCapacity) {
+    this(initialCapacity, 0);
+}
+// initialCapacity 初始容量 和 capacityIncrement 增长个数
+public Vector(int initialCapacity, int capacityIncrement) {
+    super();
+    if (initialCapacity < 0)
+        throw new IllegalArgumentException("Illegal Capacity: "+
+                                           initialCapacity);
+    this.elementData = new Object[initialCapacity];
+    this.capacityIncrement = capacityIncrement;
+}
+// 添加操作上 使用 synchronized 避免多线程同时写而引起的不一致性 
+public synchronized void addElement(E obj) {
+    modCount++;
+    ensureCapacityHelper(elementCount + 1);
+    elementData[elementCount++] = obj;
+}
+// 递增规则 如果 capacityIncrement > 0 就按照这个参数递增
+// 否则就 oldCapacity + oldCapacity 原来的两倍
+private void grow(int minCapacity) {
+    // overflow-conscious code
+    int oldCapacity = elementData.length;
+    int newCapacity = oldCapacity + ((capacityIncrement > 0) ?
+                                     capacityIncrement : oldCapacity);
+    if (newCapacity - minCapacity < 0)
+        newCapacity = minCapacity;
+    if (newCapacity - MAX_ARRAY_SIZE > 0)
+        newCapacity = hugeCapacity(minCapacity);
+    elementData = Arrays.copyOf(elementData, newCapacity);
+}
+   
+```
+
+
+
+### LinkedList
+
+```java
+transient int size = 0;
+// 链表的头
+transient Node<E> first;
+// 链表的尾
+transient Node<E> last;
+// 数据
+private static class Node<E> {
+    E item;
+    Node<E> next;
+    Node<E> prev;
+
+    Node(Node<E> prev, E element, Node<E> next) {
+        this.item = element;
+        this.next = next;
+        this.prev = prev;
+    }
+}
+// 默认添加元素是在末尾添加的
+public boolean add(E e) {
+    linkLast(e);
+    return true;
+}
+// 
+void linkLast(E e) {
+    // 原末尾数据
+    final Node<E> l = last;
+    // 新的末尾数据 prv=原末尾数据 ， e , next = null 
+    final Node<E> newNode = new Node<>(l, e, null);
+    // 末尾数据等于新生成的数据
+    last = newNode;
+    // 原末尾数据==null 证明 是第一次添加
+    if (l == null)
+        first = newNode;
+    else
+        // 原数据的末尾等于 新添加的数据
+        l.next = newNode;
+    size++;
+    modCount++;
+}
+// 获取数据
+public E get(int index) {
+    checkElementIndex(index);
+    return node(index).item;
+}
+// 二分法 小于一半就 从头开始递归
+//       大于一半就 从尾开始递归
+Node<E> node(int index) {
+    // assert isElementIndex(index);
+    if (index < (size >> 1)) {
+         // 小于一半就 从头开始递归
+        Node<E> x = first;
+        for (int i = 0; i < index; i++)
+            x = x.next;
+        return x;
+    } else {
+        //大于一半就 从尾开始递归
+        Node<E> x = last;
+        for (int i = size - 1; i > index; i--)
+            x = x.prev;
+        return x;
+    }
+}
+
+```
+
+**LinkedList是用链表结构存储数据的**
+
+操作数据的时候 直接 对元素node 的 prev和next 操作 不需要像ArrayList 那样在扩容的时候需要进行数组的复制
+
+所以数据的动态插入和删除比较快
+
+但是获取数据的时候 通过  二分法for循环查找 （小于一半就 从头开始递归  大于一半就 从尾开始递归 ）
+
+所以随机访问和遍历速度比较 慢
+

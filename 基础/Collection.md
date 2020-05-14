@@ -1,7 +1,10 @@
 ### List
 
-
  Java的List是非常常用的数据类型。List是有序的Collection。Java List一共三个实现类： 分别是ArrayList、Vector和LinkedList。 
+
+![](img\20200515020114.png)
+
+
 
 ### ArrayList（数组） 
 

@@ -1,15 +1,14 @@
 package com.qin.base;
 
-import java.util.LinkedList;
+import java.util.HashMap;
 
 public class LinkedListBase {
     public static void main(String[] args) {
-        LinkedList<Integer> linkedList = new LinkedList<>();
-        linkedList.add(1);
-        linkedList.add(2);
-        linkedList.add(3);
-        System.out.println(linkedList);
 
+        HashMap<Integer,Integer> map = new HashMap<>(7);
+        map.put(1,100);
+        map.put(2,100);
+        map.put(3,100);
 
     }
 

@@ -425,7 +425,7 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
     }
 ```
 
-**扩容 是在 put 完成之后才进行判断 size 的大小 如果大于 threshold 就进行扩容**
+**扩容 是在 put 完成之后才进行判断 size 的大小 是否大于 threshold 大于 就进行扩容**
 
 ```java
 final Node<K,V>[] resize() {

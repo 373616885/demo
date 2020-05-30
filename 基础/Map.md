@@ -38,6 +38,15 @@ transient int modCount;
 int threshold;
 // 负载因子 -- 默认等于 DEFAULT_LOAD_FACTOR = 0.75
 final float loadFactor; 
+
+// 链表的个数超过 8 就转化成 红黑树
+static final int TREEIFY_THRESHOLD = 8;
+
+// 小于 6 就转回链表
+static final int UNTREEIFY_THRESHOLD = 6;
+
+// 当数组长度还未达到64个时，优先数组的扩容，否则选择链表转为红黑树。
+static final int MIN_TREEIFY_CAPACITY = 64;
 ```
 
 

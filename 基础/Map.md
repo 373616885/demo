@@ -368,16 +368,250 @@ static final int hash(Object key) {
 
 为什么是异或运算呢？与运算和或运算 得到的结果都是各75% 只有异或算法结果才是各 50%
 
-| 与运算（都是1才1）          | 0&0  0&1  1&0 1&1            | 结果 ：0 0 0 1     | 得1概率25%     |
-| --------------------------- | ---------------------------- | ------------------ | -------------- |
-| **或运算（有1就是1）**      | **0\|0   0\|1   1\|0  1\|1** | **结果 ：0 1 1 1** | **得1概率75%** |
-| **异或运算 （相反才是1 ）** | **0^0   0^1   1^0   1^1**    | **结果 ：0 1 1 0** | **得1概率50%** |
+| 与运算（都是1才1）          | 0&0  0&1  1&0  1&1            | 结果 ：0 0 0 1     | 得1概率25% 得0概率75%     |
+| --------------------------- | ----------------------------- | ------------------ | ------------------------- |
+| **或运算（有1就是1）**      | **0\|0   0\|1   1\|0   1\|1** | **结果 ：0 1 1 1** | **得1概率75% 得0概率25%** |
+| **异或运算 （相反才是1 ）** | **0^0   0^1   1^0   1^1**     | **结果 ：0 1 1 0** | **得1概率50% 得0概率50%** |
 
 
 
 
 
 ## 扩容机制
+
+```java
+final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
+                   boolean evict) {
+        Node<K,V>[] tab; Node<K,V> p; int n, i;
+        if ((tab = table) == null || (n = tab.length) == 0)
+            n = (tab = resize()).length;
+        if ((p = tab[i = (n - 1) & hash]) == null)
+            tab[i] = newNode(hash, key, value, null);
+        else {
+            Node<K,V> e; K k;
+            if (p.hash == hash &&
+                ((k = p.key) == key || (key != null && key.equals(k))))
+                e = p;
+            else if (p instanceof TreeNode)
+                e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
+            else {
+                for (int binCount = 0; ; ++binCount) {
+                    if ((e = p.next) == null) {
+                        p.next = newNode(hash, key, value, null);
+                        if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
+                            treeifyBin(tab, hash);
+                        break;
+                    }
+                    if (e.hash == hash &&
+                        ((k = e.key) == key || (key != null && key.equals(k))))
+                        break;
+                    p = e;
+                }
+            }
+            if (e != null) { // existing mapping for key
+                V oldValue = e.value;
+                if (!onlyIfAbsent || oldValue == null)
+                    e.value = value;
+                afterNodeAccess(e);
+                return oldValue;
+            }
+        }
+        ++modCount;
+    	// put 结束之后才进行扩容
+        if (++size > threshold)
+            resize();
+        afterNodeInsertion(evict);
+        return null;
+    }
+```
+
+**扩容 是在 put 完成之后才进行判断 size 的大小 大于 threshold 就进行扩容**
+
+```java
+final Node<K,V>[] resize() {
+        Node<K,V>[] oldTab = table;
+        int oldCap = (oldTab == null) ? 0 : oldTab.length;
+        int oldThr = threshold;
+        int newCap, newThr = 0;
+        if (oldCap > 0) {
+            if (oldCap >= MAXIMUM_CAPACITY) {
+                threshold = Integer.MAX_VALUE;
+                return oldTab;
+            }
+            // 扩容规则 扩大一倍 oldCap << 1
+            else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY &&
+                     oldCap >= DEFAULT_INITIAL_CAPACITY)
+                newThr = oldThr << 1; // double threshold
+        }
+        else if (oldThr > 0) // initial capacity was placed in threshold
+            newCap = oldThr;
+        else {               // zero initial threshold signifies using defaults
+            newCap = DEFAULT_INITIAL_CAPACITY;
+            newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
+        }
+        if (newThr == 0) {
+            float ft = (float)newCap * loadFactor;
+            newThr = (newCap < MAXIMUM_CAPACITY && ft < (float)MAXIMUM_CAPACITY ?
+                      (int)ft : Integer.MAX_VALUE);
+        }
+        threshold = newThr;
+        @SuppressWarnings({"rawtypes","unchecked"})
+        Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
+        table = newTab;
+        if (oldTab != null) {
+            for (int j = 0; j < oldCap; ++j) {
+                Node<K,V> e;
+                if ((e = oldTab[j]) != null) {
+                    // gc 
+                    oldTab[j] = null;
+                    if (e.next == null)
+                        // 当前数组位置对应的列表只有一个时，直接计算放入
+                        newTab[e.hash & (newCap - 1)] = e;
+                    else if (e instanceof TreeNode)
+                        // 红黑树直接转换
+                        ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
+                    else { // preserve order
+                        // 当前数组位置对应的列表多个
+                        
+                        // 元素在重新计算hash之后，因为n变为2倍，
+                        // 那么元素的位置要么是在原位置，要么是在原位置 + oldCap
+                        Node<K,V> loHead = null, loTail = null;
+                        Node<K,V> hiHead = null, hiTail = null;
+                        Node<K,V> next;
+                        do {
+                            // e 当前节点
+                            // next 下一个节点
+                            next = e.next;
+                            // 当前节点重新计算后还是原位置
+                            if ((e.hash & oldCap) == 0) {
+                                if (loTail == null)
+                                   	// 第一次进入头节点等于本身
+                                    loHead = e;
+                                else
+                                    // 上一个的尾节点等于当前节点
+                                    loTail.next = e;
+                                // 当前尾节点等于本身
+                                loTail = e;
+                            }
+                            else {
+                                // 当前节点重新计算后还是原位置 + oldCap
+                                if (hiTail == null)
+                                    // 第一次进入头节点等于本身
+                                    hiHead = e;
+                                else
+                                    // 上一个的尾节点等于当前节点
+                                    hiTail.next = e;
+                                // 当前尾节点等于本身
+                                hiTail = e;
+                            }
+                        } while ((e = next) != null);
+                        if (loTail != null) {
+                            // 元素重新算hash 在  原位置的部分
+                            loTail.next = null;
+                            newTab[j] = loHead;
+                        }
+                        if (hiTail != null) {
+                             // 元素重新算hash 在  原位置+ oldCap 的部分
+                            hiTail.next = null;
+                            newTab[j + oldCap] = hiHead;
+                        }
+                    }
+                }
+            }
+        }
+        return newTab;
+    }
+```
+
+
+
+**扩容的容量规则：**newCap = oldCap << 1
+
+**扩容后元素的位置要么是在原位置，要么是在原位置 + oldCap**
+
+通过 判断 哈希 与 oldCap 是否等于 0（e.hash & oldCap) == 0
+
+等于 0  放到这个链表里面   loHead = null, loTail = null;
+等于1   放到这个链表里面   hiHead = null,  hiTail = null;
+
+最后 
+
+loTail 这个链表有值就放 原位置      --   newTab[j] = loHead;   
+
+hiTail 这个链表有值就放 原位置+ oldCap  -- newTab[j + oldCap] = hiHead;
+
+
+
+### 为什么扩容后 元素的位置要么是在原位置，要么是在原位置 + oldCap呢？
+
+首先要明确  元素计算hash的位置 取觉于 cap 的2n次幂的 低n位
+
+那么 HasmMap 扩容容量变成 原来的 两倍 newCap = oldCap * 2   （ oldCap << 1）
+
+扩容后，因为n变为2倍，那么重新计算hash 的位置 取决因素 就比原来的多一位  高位多1bit(红色)  
+
+
+
+![](img\20200519004837.jpg)
+
+
+
+这个高位 观察得知要么 是 0 要么 1 ，那么 新的index就会发生这样的变化 ：
+
+**要么是在原位置，要么是在原位置 + oldCap**
+
+![](img\20200519004838.jpg)
+
+#### 那么如何确定这个高位呢
+
+原来的 n  （oldCap ）等于 1 0000  这个高位 （就是需要确定的高位）等于 1  低位都是 0
+
+那么就可以通过 e.hash & oldCap 来判断 扩容后hash的这个高位
+
+等于  0  这个高位 等于 0  等于  1   这个高位 等于 1
+
+```java
+扩容后的高位等于 0 就是第五位  
+newCap 在扩容  hash的位置  取觉于低5位   
+oldCap = 16： hash的位置   取觉于低4位  
+0000 0000 0000 0000 0000 0000 0001 0000
+e.hash ：    
+1111 1111 1111 1111 0000 1111 0000 0101     
+e.hash & oldCap
+0000 0000 0000 0000 0000 0000 0000 0000  == 0
+    
+扩容后的高位等于 1  就是第五位     
+newCap 在扩容  hash的位置  取觉于低5位   
+oldCap = 16： hash的位置   取觉于低4位    
+0000 0000 0000 0000 0000 0000 0001 0000
+e.hash ：    
+1111 1111 1111 1111 0000 1111 0001 0101  
+e.hash & oldCap
+0000 0000 0000 0000 0000 0000 0001 0000  == 1    
+    
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

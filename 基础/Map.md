@@ -525,13 +525,14 @@ final Node<K,V>[] resize() {
 
 
 
-**扩容的容量规则：**newCap = oldCap << 1
+**扩容的容量规则：newCap = oldCap << 1**
 
 **扩容后元素的位置要么是在原位置，要么是在原位置 + oldCap**
 
 通过 判断 哈希 与 oldCap 是否等于 0（e.hash & oldCap) == 0
 
 等于 0  放到这个链表里面   loHead = null, loTail = null;
+
 等于1   放到这个链表里面   hiHead = null,  hiTail = null;
 
 最后 
@@ -539,6 +540,10 @@ final Node<K,V>[] resize() {
 loTail 这个链表有值就放 原位置      --   newTab[j] = loHead;   
 
 hiTail 这个链表有值就放 原位置+ oldCap  -- newTab[j + oldCap] = hiHead;
+
+
+
+
 
 
 
@@ -571,7 +576,7 @@ hiTail 这个链表有值就放 原位置+ oldCap  -- newTab[j + oldCap] = hiHea
 等于  0  这个高位 等于 0  等于  1   这个高位 等于 1
 
 ```java
-扩容后的高位等于 0 就是第五位  
+扩容后的高位等于 0 就是e.hash第五位  
 newCap 在扩容  hash的位置  取觉于低5位   
 oldCap = 16： hash的位置   取觉于低4位  
 0000 0000 0000 0000 0000 0000 0001 0000
@@ -580,7 +585,7 @@ e.hash ：
 e.hash & oldCap
 0000 0000 0000 0000 0000 0000 0000 0000  == 0
     
-扩容后的高位等于 1  就是第五位     
+扩容后的高位等于 1  就是e.hash第五位     
 newCap 在扩容  hash的位置  取觉于低5位   
 oldCap = 16： hash的位置   取觉于低4位    
 0000 0000 0000 0000 0000 0000 0001 0000

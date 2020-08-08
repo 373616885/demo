@@ -49,3 +49,4 @@ JRE是可以在其上运行、测试和传输应用程序的Java平台。它包�
 - 执行引擎（Execution Engine）
 - 本地库接口（Native Interface）
 
+![](img\20200616210328.png)

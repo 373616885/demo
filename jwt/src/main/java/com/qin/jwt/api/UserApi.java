@@ -1,6 +1,7 @@
 package com.qin.jwt.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.qin.jwt.annotation.PassToken;
 import com.qin.jwt.annotation.UserLoginToken;
 import com.qin.jwt.entity.User;
 import com.qin.jwt.service.TokenService;
@@ -26,6 +27,7 @@ public class UserApi {
     @Autowired
     TokenService tokenService;
     //登录
+    @PassToken(required = false)
     @PostMapping("/login")
     public Object login( User user){
         ObjectMapper mapper = new ObjectMapper();

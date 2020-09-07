@@ -39,6 +39,14 @@ public class JWTUtil {
     private static final Algorithm algorithm = Algorithm.HMAC256(TOKEN_SECRET);
 
     /**
+     *  iss（签发者）
+     *  iat（签发时间）
+     *  exp（过期时间）
+     *  sub（面向的用户）
+     *  aud（接收方）
+     */
+
+    /**
      * 生成签名,15分钟后过期
      */
     public static String sign(User user) {

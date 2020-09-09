@@ -18,7 +18,7 @@ public class OptResult<T> {
     private T data;
 
     public static<T> OptResult<T> success() {
-        return new OptResult<T>().setSuccess(true);
+        return new OptResult<T>().setSuccess(false);
     }
 
     public static<T> OptResult<T> success(T data) {

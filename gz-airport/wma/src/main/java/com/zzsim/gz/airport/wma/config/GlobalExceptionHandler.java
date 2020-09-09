@@ -11,6 +11,7 @@ import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
@@ -22,8 +23,7 @@ import java.util.stream.Collectors;
  * @date 2019-05-30
  **/
 @Slf4j
-//@ResponseBody
-//@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     /**

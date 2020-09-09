@@ -30,13 +30,13 @@ public class ResultController {
     }
 
     @ResponseResult
-    @RequestMapping("/dog/{name}")
+    @RequestMapping("/dog/name/{name}")
     public Dog getDog(@PathVariable("name") String name) {
         for (Map.Entry<Integer, Dog> entry : dogs.entrySet()) {
             Dog dog = entry.getValue();
-//            if (StringUtils.equals(dog.getName(), name)) {
-//                return dog;
-//            }
+            if (StringUtils.equals(dog.getName(), name)) {
+                return dog;
+            }
         }
         throw new BizException("that dog non existent");
     }

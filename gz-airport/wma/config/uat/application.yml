@@ -1,0 +1,14 @@
+server:
+  port: 9008
+  servlet:
+    context-path: /wma
+
+logging:
+  config: classpath:log4j2.xml
+
+
+spring:
+  resources:
+    add-mappings: false
+  mvc:
+    throw-exception-if-no-handler-found: true

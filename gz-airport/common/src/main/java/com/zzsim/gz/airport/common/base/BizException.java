@@ -1,7 +1,5 @@
 package com.zzsim.gz.airport.common.base;
 
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * 自定义异常
  * @author qinjp

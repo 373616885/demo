@@ -11,7 +11,7 @@ import java.util.ResourceBundle;
  * @author qinjp
  * @date 2020/9/10
  */
-public class MsgSource {
+public final class MsgSource {
 
     private MsgSource() { }
 

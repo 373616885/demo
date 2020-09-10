@@ -13,9 +13,11 @@ import java.util.ResourceBundle;
  */
 public class MsgSource {
 
+    private MsgSource() { }
+
     private static final Map<String, String> messages = new HashMap<>();
 
-    private static ResourceBundle resourceBundle = ResourceBundle.getBundle("messages");
+    private static final ResourceBundle resourceBundle = ResourceBundle.getBundle("messages");
 
     static {
         Enumeration<String> keys = resourceBundle.getKeys();

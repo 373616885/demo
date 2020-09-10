@@ -13,8 +13,6 @@ public class OptResult<T> {
 
     private boolean success;
 
-    private String msg;
-
     private T data;
 
     public static <T> OptResult<T> success() {

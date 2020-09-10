@@ -15,20 +15,20 @@ public class MsgSource {
 
     private MsgSource() { }
 
-    private static final Map<String, String> messages = new HashMap<>();
+    private static final Map<String, String> MESSAGES = new HashMap<>();
 
-    private static final ResourceBundle resourceBundle = ResourceBundle.getBundle("messages");
+    private static final ResourceBundle RESOURCEBUNDLE = ResourceBundle.getBundle("messages");
 
     static {
-        Enumeration<String> keys = resourceBundle.getKeys();
+        Enumeration<String> keys = RESOURCEBUNDLE.getKeys();
         while (keys.hasMoreElements()) {
             String key = keys.nextElement();
-            messages.put(key, resourceBundle.getString(key));
+            MESSAGES.put(key, RESOURCEBUNDLE.getString(key));
         }
     }
 
     public static String getMsg(String key) {
-        return messages.get(key);
+        return MESSAGES.get(key);
     }
 
 }

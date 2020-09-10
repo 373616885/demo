@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
+ * 凌凯短信配置类
+ *
  * @author qinjp
  * @date 2020/9/10
  */

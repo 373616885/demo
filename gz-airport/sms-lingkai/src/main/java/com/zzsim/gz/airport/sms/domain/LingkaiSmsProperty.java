@@ -7,13 +7,14 @@ import org.springframework.stereotype.Component;
 
 /**
  * 读取 短信 配置
+ *
  * @author qinjp
  * @date 2020/9/10
  */
 @Data
 @Component
 @PropertySource("classpath:sms.properties")
-@ConfigurationProperties(prefix = "sms.lingkai" , ignoreUnknownFields = false)
+@ConfigurationProperties(prefix = "sms.lingkai", ignoreUnknownFields = false)
 public class LingkaiSmsProperty {
 
     /**

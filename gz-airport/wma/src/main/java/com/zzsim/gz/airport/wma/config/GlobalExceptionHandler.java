@@ -91,7 +91,7 @@ public class GlobalExceptionHandler {
             return OptResult.fail(t.getVariableName() + MsgSource.getMsg("param.miss"));
         }
         // 默认值
-        return OptResult.fail(MsgSource.getMsg("fail"));
+        return OptResult.fail(e.getMessage());
     }
 
 
@@ -103,7 +103,7 @@ public class GlobalExceptionHandler {
         // 记录日志
         logError(request, e);
         // 默认值
-        return OptResult.fail(MsgSource.getMsg("fail"));
+        return OptResult.fail(e.getMessage());
     }
 
     private void logError(HttpServletRequest request, Exception e) {

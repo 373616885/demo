@@ -1,9 +1,10 @@
 package com.zzsim.gz.airport.common.base;
 
-import lombok.*;
+import lombok.Data;
 import lombok.experimental.Accessors;
 
 /**
+ *
  * @author qinjp
  * @date 2020/9/9
  */
@@ -18,7 +19,7 @@ public class OptResult<T> {
     private T data;
 
     public static<T> OptResult<T> success() {
-        return new OptResult<T>().setSuccess(false);
+        return new OptResult<T>().setSuccess(true);
     }
 
     public static<T> OptResult<T> success(T data) {

@@ -1,5 +1,6 @@
 package com.zzsim.gz.airport.wma.config;
 
+import com.zzsim.gz.airport.common.base.MsgSource;
 import com.zzsim.gz.airport.common.base.OptResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -8,9 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.ServletRequestBindingException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,11 +40,13 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException.class,
             ServletRequestBindingException.class,
             BindException.class})
-    public OptResult bindExceptionHandler(Exception e) {
+    public OptResult<String> bindExceptionHandler(HttpServletRequest request, Exception e) {
+        // 记录日志
+        logError(request, e);
 
         if (e instanceof MethodArgumentNotValidException) {
-            /**
-             *  1. @RequestBody 绑定参数错误
+            /*
+             *  @RequestBody 绑定参数错误
              */
             MethodArgumentNotValidException t = (MethodArgumentNotValidException) e;
             String msg = t.getBindingResult()
@@ -56,7 +57,7 @@ public class GlobalExceptionHandler {
         }
 
         if (e instanceof BindException) {
-            /**
+            /*
              * 请求参数绑定错误
              */
             BindException t = (BindException) e;
@@ -78,24 +79,19 @@ public class GlobalExceptionHandler {
         }
 
         if (e instanceof MissingServletRequestParameterException) {
-            /**
+            /*
              * required = true 错误
              */
             MissingServletRequestParameterException t = (MissingServletRequestParameterException) e;
-            String msg = t.getParameterName() + " is null";
-            return OptResult.fail(msg);
+            return OptResult.fail(t.getParameterName() + MsgSource.getMsg("param.miss"));
         }
 
         if (e instanceof MissingPathVariableException) {
             MissingPathVariableException t = (MissingPathVariableException) e;
-            String msg = t.getVariableName() + " is null";
-            return OptResult.fail(msg);
+            return OptResult.fail(t.getVariableName() + MsgSource.getMsg("param.miss"));
         }
-
-        String msg = "param is empty";
-        return OptResult.fail(msg);
-
-
+        // 默认值
+        return OptResult.fail(MsgSource.getMsg("fail"));
     }
 
 
@@ -103,11 +99,17 @@ public class GlobalExceptionHandler {
      * 所有异常报错
      */
     @ExceptionHandler(value = Exception.class)
-    public OptResult allExceptionHandler(HttpServletRequest request, Exception e) {
+    public OptResult<String> allExceptionHandler(HttpServletRequest request, Exception e) {
+        // 记录日志
+        logError(request, e);
+        // 默认值
+        return OptResult.fail(MsgSource.getMsg("fail"));
+    }
+
+    private void logError(HttpServletRequest request, Exception e) {
         log.error("异常堆栈:", e);
         log.error("异常接口: {}", request.getRequestURL().toString());
         log.error("异常信息: {}", e.getMessage());
-        return OptResult.fail(e.getMessage());
     }
 
 }

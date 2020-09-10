@@ -14,7 +14,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 import java.util.Objects;
 
 /**
- * 统一返回值
+ *  Controller 统一返回值
  *
  * @author qinjp
  * @date 2019-05-30
@@ -23,6 +23,9 @@ import java.util.Objects;
 @RestControllerAdvice
 public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
 
+    /**
+     * 对Controller直接返回的字符串不做处理
+     */
     @Override
     public boolean supports(@NonNull MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
         return Objects.requireNonNull(returnType.getMethod()).getReturnType() != String.class;

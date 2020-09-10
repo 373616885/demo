@@ -18,6 +18,8 @@ import javax.validation.ConstraintViolationException;
 import java.util.stream.Collectors;
 
 /**
+ * 全局异常处理
+ *
  * @author qinjp
  * @date 2019-05-30
  **/

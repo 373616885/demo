@@ -82,6 +82,12 @@
             <artifactId>common</artifactId>
         </dependency>
 
+        <!-- 凌凯短信 -->
+        <dependency>
+            <groupId>com.zzsim.gz.airport</groupId>
+            <artifactId>sms-lingkai</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -93,8 +99,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-
 
 
     </dependencies>

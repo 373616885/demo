@@ -21,12 +21,14 @@
 
     <modules>
         <module>wma</module>
-        <module>sms</module>
+        <module>sms-lingkai</module>
         <module>common</module>
     </modules>
 
     <properties>
         <java.version>1.8</java.version>
+        <guava.version>29.0-jre</guava.version>
+
     </properties>
 
     <dependencies>
@@ -45,6 +47,19 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- guava
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>-->
+
+        <!-- 集合操作类
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>-->
+
     </dependencies>
 
     <dependencyManagement>
@@ -52,6 +67,11 @@
             <dependency>
                 <groupId>com.zzsim.gz.airport</groupId>
                 <artifactId>common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zzsim.gz.airport</groupId>
+                <artifactId>sms-lingkai</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

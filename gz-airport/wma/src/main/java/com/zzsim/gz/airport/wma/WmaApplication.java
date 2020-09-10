@@ -2,11 +2,13 @@ package com.zzsim.gz.airport.wma;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
 
 /**
  * @author qinjp
  * @date 2020/9/9
  */
+@Import(com.zzsim.gz.airport.sms.LingkaiSmsCinfig.class)
 @SpringBootApplication
 public class WmaApplication {
 

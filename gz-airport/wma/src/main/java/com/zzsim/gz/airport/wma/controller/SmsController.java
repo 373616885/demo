@@ -22,7 +22,8 @@ public class SmsController {
     @GetMapping("sms/{mobile}")
     public OptResult<String> sendMobileCaptcha(@PathVariable("mobile") String mobile) {
         log.info("{} 发送短信验证码",mobile);
-        return OptResult.success(service.sendMobileCaptcha(mobile));
+        service.sendMobileCaptcha(mobile);
+        return OptResult.success();
     }
 
 }

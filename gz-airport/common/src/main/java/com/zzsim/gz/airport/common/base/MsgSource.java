@@ -6,14 +6,15 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
- * 前端返回错误信息
+ * 获取配置文件 messages.properties信息
  *
  * @author qinjp
  * @date 2020/9/10
  */
 public final class MsgSource {
 
-    private MsgSource() { }
+    private MsgSource() {
+    }
 
     private static final Map<String, String> MESSAGES = new HashMap<>();
 

@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 /**
- *
  * @author qinjp
  * @date 2020/9/9
  */
@@ -18,19 +17,19 @@ public class OptResult<T> {
 
     private T data;
 
-    public static<T> OptResult<T> success() {
+    public static <T> OptResult<T> success() {
         return new OptResult<T>().setSuccess(true);
     }
 
-    public static<T> OptResult<T> success(T data) {
+    public static <T> OptResult<T> success(T data) {
         return new OptResult<T>().setSuccess(true).setData(data);
     }
 
-    public static<T> OptResult<T> fail() {
+    public static <T> OptResult<T> fail() {
         return new OptResult<T>().setSuccess(false);
     }
 
-    public static<T> OptResult<T> fail(T data) {
+    public static <T> OptResult<T> fail(T data) {
         return new OptResult<T>().setSuccess(false).setData(data);
     }
 

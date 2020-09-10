@@ -3,12 +3,12 @@ package com.zzsim.gz.airport.sms.util;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * <p>n位随机数工具类</p>
+ * 随机数工具类
  *
  * @author qinjp
  * @date 2020/9/10
  */
-public class RandomNumUtil {
+public final class RandomNumUtil {
 
     private RandomNumUtil() {
     }

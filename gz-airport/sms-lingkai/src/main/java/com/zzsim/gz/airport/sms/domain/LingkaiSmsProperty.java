@@ -19,7 +19,7 @@ public class LingkaiSmsProperty {
     /**
      * 请求路径
      */
-    private String url = "https://mb345.com/ws/BatchSend2.aspx";
+    private String url;
 
     /**
      * 用户名

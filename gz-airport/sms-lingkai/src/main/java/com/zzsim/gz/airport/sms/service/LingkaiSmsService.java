@@ -27,8 +27,6 @@ public class LingkaiSmsService {
         // 产生随机数字短信验证码
         String captcha = RandomNumUtil.getRandomNum(length);
 
-        System.out.println(lingkaiSmsProperty);
-
         String data = LingkaiSmsUtil.send(this.lingkaiSmsProperty.getUrl(),
             this.lingkaiSmsProperty.getUsername(),
             this.lingkaiSmsProperty.getPassword(),

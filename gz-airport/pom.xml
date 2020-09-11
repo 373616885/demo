@@ -28,7 +28,7 @@
     <properties>
         <java.version>1.8</java.version>
         <guava.version>29.0-jre</guava.version>
-
+        <mybatis-plus.version>3.4.0</mybatis-plus.version>
     </properties>
 
     <dependencies>
@@ -47,24 +47,25 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- guava
+        <!-- guava -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
-        </dependency>-->
+        </dependency>
 
-        <!-- 集合操作类
+        <!-- 集合操作类 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-        </dependency>-->
-        <!--
-            <dependency>
-                <groupId>cn.hutool</groupId>
-                <artifactId>hutool-all</artifactId>
-                <version>5.4.2</version>
-            </dependency>-->
+        </dependency>
+
+        <!-- hutool 工具包-->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.4.2</version>
+        </dependency>
 
     </dependencies>
 
@@ -79,6 +80,12 @@
                 <groupId>com.zzsim.gz.airport</groupId>
                 <artifactId>sms-lingkai</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-boot-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

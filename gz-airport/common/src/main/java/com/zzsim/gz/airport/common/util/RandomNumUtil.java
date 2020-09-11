@@ -1,4 +1,4 @@
-package com.zzsim.gz.airport.sms.util;
+package com.zzsim.gz.airport.common.util;
 
 import java.util.concurrent.ThreadLocalRandom;
 

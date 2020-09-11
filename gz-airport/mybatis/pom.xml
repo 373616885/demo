@@ -2,39 +2,27 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.zzsim.gz.airport</groupId>
         <artifactId>gz-airport</artifactId>
         <version>0.0.1</version>
     </parent>
 
-    <artifactId>sms-lingkai</artifactId>
+    <artifactId>mybatis</artifactId>
 
-    <name>sms-lingkai</name>
-    <description>广州机场项目凌凯短信服务</description>
+    <name>mybatis</name>
+    <description>广州机场项目数据库实体类</description>
 
     <properties>
         <java.version>1.8</java.version>
     </properties>
 
     <dependencies>
-
-        <!-- 公共包 -->
         <dependency>
-            <groupId>com.zzsim.gz.airport</groupId>
-            <artifactId>common</artifactId>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
             <scope>compile</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <scope>compile</scope>
-        </dependency>
-
     </dependencies>
-
-
 
 </project>

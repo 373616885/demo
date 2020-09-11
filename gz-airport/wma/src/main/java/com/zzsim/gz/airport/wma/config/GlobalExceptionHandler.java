@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -51,9 +52,11 @@ public class GlobalExceptionHandler {
              *  @RequestBody 绑定参数错误
              */
             MethodArgumentNotValidException t = (MethodArgumentNotValidException) e;
-            String msg = t.getBindingResult()
-                    .getAllErrors().stream()
+            String msg  =t.getBindingResult()
+                    .getAllErrors()
+                    .stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .map(MsgSource::getMsg)
                     .collect(Collectors.joining(","));
             return OptResult.fail(msg);
         }
@@ -67,6 +70,7 @@ public class GlobalExceptionHandler {
                     .getAllErrors()
                     .stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .map(MsgSource::getMsg)
                     .collect(Collectors.joining(","));
             return OptResult.fail(msg);
         }
@@ -76,6 +80,7 @@ public class GlobalExceptionHandler {
             String msg = t.getConstraintViolations()
                     .stream()
                     .map(ConstraintViolation::getMessage)
+                    .map(MsgSource::getMsg)
                     .collect(Collectors.joining(","));
             return OptResult.fail(msg);
         }

@@ -1,5 +1,7 @@
 package com.zzsim.gz.airport.common.base;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +31,8 @@ public final class MsgSource {
     }
 
     public static String getMsg(String key) {
-        return MESSAGES.get(key);
+        String msg = MESSAGES.get(key);
+        return StringUtils.isBlank(msg) ? key : msg;
     }
 
 }

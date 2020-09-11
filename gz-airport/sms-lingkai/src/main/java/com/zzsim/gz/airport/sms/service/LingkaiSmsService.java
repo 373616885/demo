@@ -1,12 +1,14 @@
 package com.zzsim.gz.airport.sms.service;
 
+import com.zzsim.gz.airport.common.util.RandomNumUtil;
 import com.zzsim.gz.airport.sms.domain.LingkaiSmsProperty;
-import com.zzsim.gz.airport.sms.util.RandomNumUtil;
 import lombok.AllArgsConstructor;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -30,51 +32,52 @@ public class LingkaiSmsService {
 
     /**
      * 发送短信验证码
-     * 返回值大于零则代表成功
+     * ImmutablePair
+     *  L 是否发送成功
+     *  R 发送短信内容
      * @param mobile 手机号
      */
     @SneakyThrows(Exception.class)
-    public String sendMobileCaptcha(@NonNull String mobile) {
+    public ImmutablePair<Boolean, String> sendMobileCaptcha(@NonNull String mobile) {
 
         Integer length = this.lingkaiSmsProperty.getCaptchaLength();
         // 产生随机数字短信验证码
         String captcha = RandomNumUtil.getRandomNum(length);
+        // 发送内容
+        String content = this.lingkaiSmsProperty.getTemplateCode().replaceAll(this.lingkaiSmsProperty.getTemplateParam(), captcha);
         // 凌凯发送短信
         String data = send(this.lingkaiSmsProperty.getUrl(),
                 this.lingkaiSmsProperty.getUsername(),
                 this.lingkaiSmsProperty.getPassword(),
-                this.lingkaiSmsProperty.getTemplateCode(),
-                this.lingkaiSmsProperty.getTemplateParam(),
-                mobile, captcha);
+                content,
+                mobile);
 
-        log.info("短信返回值：{}", data);
+        log.info("手机: {}  内容: {}  返回值：{}", mobile, content, data);
 
-        return data;
+        // 判断是否发送成功
+        Boolean success = StringUtils.isNotBlank(data) && Integer.parseInt(data) > 0;
+
+        return ImmutablePair.of(success, content);
     }
 
 
     /**
      * 发送短信，成功返回流水号(只支持一个参数)
      *
-     * @param url           请求地址
-     * @param username      用户名
-     * @param password      密码
-     * @param templateCode  短信模板
-     * @param templateParam 短信模板参数
-     * @param phoneNumbers  手机号(多个逗号分隔)
-     * @param captcha       短信验证码
+     * @param url          请求地址
+     * @param username     用户名
+     * @param password     密码
+     * @param content      短信内容
+     * @param phoneNumbers 手机号(多个逗号分隔)
      */
     @SneakyThrows(Exception.class)
-    private String send(String url, String username, String password, String templateCode, String templateParam, String phoneNumbers, String captcha) {
-        templateCode = templateCode.replaceAll(templateParam, captcha);
-        String content = URLEncoder.encode(templateCode, "GBK");
+    private String send(String url, String username, String password, String content, String phoneNumbers) {
+
         String path = url +
                 "?CorpID=" + username +
                 "&Pwd=" + password +
                 "&Mobile=" + phoneNumbers +
-                "&Content=" + content;
-
-        log.info("手机: {} ：内容: {}", phoneNumbers, content);
+                "&Content=" + URLEncoder.encode(content, "GBK");
 
         @Cleanup
         InputStreamReader isr = new InputStreamReader(new URL(path).openStream(), StandardCharsets.UTF_8);

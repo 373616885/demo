@@ -1,6 +1,5 @@
-package com.zzsim.gz.airport.wma.controller;
+package com.zzsim.gz.airport.wma.web;
 
-import com.zzsim.gz.airport.common.base.MsgSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +18,7 @@ public class SampleController {
     @GetMapping( value = "hello" , produces = MediaType.APPLICATION_JSON_VALUE)
     public String samlpe(){
         log.info("hello world");
-        return "hello world" + MsgSource.getMsg("success");
+        return "hello world";
     }
 
 }

@@ -11,3 +11,15 @@ spring:
     add-mappings: false
   mvc:
     throw-exception-if-no-handler-found: true
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.9.250:3306/zzsim-airport?useUnicode=true&autoReconnect=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false&&allowMultiQueries=true&serverTimezone=GMT%2B8
+    username: root
+    password: 373616885
+    hikari:
+      auto-commit: true
+      minimum-idle: 1
+      maximum-pool-size: 10
+      #一个连接的生命时长（毫秒），超时而且没被使用则被释放（retired）
+      max-lifetime: 25200000
+      connection-test-query: select 1 from dual

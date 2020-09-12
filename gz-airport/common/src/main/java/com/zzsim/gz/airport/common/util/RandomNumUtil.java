@@ -22,7 +22,7 @@ public final class RandomNumUtil {
     /**
      * 随机n位数字
      * 这里注意n要大于零小于六
-     * 当随机数小于六位时，substring 对出现问题
+     * 当随机数位数小于六位时，length > 6  substring 就会出现问题
      * %06d 这个只能填充六位
      */
     public static String getRandomNum(Integer length) {

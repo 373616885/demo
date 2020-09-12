@@ -21,8 +21,8 @@ import java.util.List;
 @Configuration
 public class CaffeineConfig {
 
-    @Value("${spring.cache.caffeine.spec}")
-    private String caffeineSpec = "initialCapacity=10,maximumSize=500,expireAfterWrite=1800s";
+    @Value("${spring.cache.caffeine.spec:initialCapacity=100,maximumSize=500,expireAfterWrite=1800s}")
+    private String caffeineSpec;
 
 
     @Bean(name = "caffeineCacheManager")
@@ -34,6 +34,7 @@ public class CaffeineConfig {
         cacheManager.setCacheNames(getNames());
         return cacheManager;
     }
+
 
     private static List<String> getNames(){
         return ImmutableList.of(Constant.KEY_PREFIX);

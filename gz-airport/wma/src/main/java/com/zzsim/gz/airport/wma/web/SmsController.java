@@ -2,6 +2,7 @@ package com.zzsim.gz.airport.wma.web;
 
 import com.zzsim.gz.airport.common.base.OptResult;
 import com.zzsim.gz.airport.wma.domain.SmsSendDTO;
+import com.zzsim.gz.airport.wma.service.SmsService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -17,9 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class SmsController {
 
+    private final SmsService smsService;
+
     @PostMapping("sms/mobile/captcha")
     public OptResult<String> sendMobileCaptcha(@Validated SmsSendDTO mobile) {
         log.info("{} 发送短信验证码",mobile);
+        smsService.send(mobile.getMobile());
         return OptResult.success();
     }
 

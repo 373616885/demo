@@ -23,3 +23,18 @@ spring:
       #一个连接的生命时长（毫秒），超时而且没被使用则被释放（retired）
       max-lifetime: 25200000
       connection-test-query: select 1 from dual
+  redis:
+    database: 0
+    host: 47.100.185.77
+    port: 6379
+    password: 373616885
+    timeout: 5000
+    lettuce:
+      pool.max-active: 8
+      pool.max-wait: -1
+      pool.max-idle: 8
+      pool.min-idle: 2
+  cache:
+    type: caffeine
+    caffeine:
+      spec: initialCapacity=100,maximumSize=500,expireAfterWrite=900s

@@ -23,12 +23,14 @@
         <module>wma</module>
         <module>sms</module>
         <module>common</module>
+        <module>cache</module>
     </modules>
 
     <properties>
         <java.version>1.8</java.version>
         <guava.version>29.0-jre</guava.version>
         <mybatis-plus.version>3.4.0</mybatis-plus.version>
+        <hutool-all.version>5.4.2</hutool-all.version>
     </properties>
 
     <dependencies>
@@ -64,7 +66,7 @@
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
-            <version>5.4.2</version>
+            <version>${hutool-all.version}</version>
         </dependency>
 
     </dependencies>
@@ -78,10 +80,14 @@
             </dependency>
             <dependency>
                 <groupId>com.zzsim.gz.airport</groupId>
+                <artifactId>cache</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zzsim.gz.airport</groupId>
                 <artifactId>sms</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-boot-starter</artifactId>

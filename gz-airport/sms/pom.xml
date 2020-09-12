@@ -24,13 +24,13 @@
         <dependency>
             <groupId>com.zzsim.gz.airport</groupId>
             <artifactId>common</artifactId>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <scope>compile</scope>
+            <artifactId>spring-boot-starter</artifactId>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

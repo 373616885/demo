@@ -1,9 +1,9 @@
 package com.zzsim.gz.airport.wma.service;
 
+import com.zzsim.gz.airport.common.util.RandomNumUtil;
 import com.zzsim.gz.airport.common.util.RegexUtils;
 import com.zzsim.gz.airport.sms.service.LingkaiSmsService;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,7 +17,18 @@ public class SmsService {
     private final LingkaiSmsService lingkaiSmsService;
 
     /**
+     * 校验手机是否存在
+     *
+     * @param mobile
+     */
+    public boolean checkMobileIsExist(String mobile) {
+        // TODO
+        return true;
+    }
+
+    /**
      * 发送短信
+     *
      * @param mobile
      */
     public boolean send(String mobile) {
@@ -26,9 +37,9 @@ public class SmsService {
             return false;
         }
         // 发送手机验证码
-        ImmutablePair<Boolean, String> result = lingkaiSmsService.sendMobileCaptcha(mobile);
-
-
+        //
+        String captcha = RandomNumUtil.getRandomNum(4);
+        lingkaiSmsService.send(mobile, captcha);
 
 
         return true;

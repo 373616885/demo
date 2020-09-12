@@ -21,7 +21,6 @@ public class SmsSendDTO {
 	@NotBlank(message = "mobile.not.blank")
 	private String mobile;
 	
-	@Builder.Default
-	private Boolean flagCheckMobile = false;
+	private Boolean flagCheckMobile;
 
 }

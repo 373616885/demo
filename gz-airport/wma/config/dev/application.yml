@@ -15,7 +15,7 @@ sms:
     #限制每小时发送次数
     limitCountHour: 5
     #限制手机每天次数
-    limitCountEveryDay: 20
+    limitCountDay: 20
 
 
 spring:

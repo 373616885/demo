@@ -29,6 +29,6 @@ public class SmsCaptchaProperty {
     /**
      * 限制手机每天次数
      */
-    private Integer limitCountEveryDay;
+    private Integer limitCountDay;
 
 }

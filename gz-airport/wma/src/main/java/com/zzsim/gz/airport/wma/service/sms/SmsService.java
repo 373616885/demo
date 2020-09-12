@@ -6,7 +6,6 @@ import com.zzsim.gz.airport.sms.service.LingkaiSmsService;
 import com.zzsim.gz.airport.wma.domain.sms.SmsCaptchaProperty;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,8 +16,6 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class SmsService {
-
-    private final StringRedisTemplate stringRedisTemplate;
 
     private final LingkaiSmsService lingkaiSmsService;
 
@@ -39,7 +36,7 @@ public class SmsService {
             return false;
         }
         // 限制手机24小时
-        return redisLimit.limit("limit.count.everyDay:" + mobile, 86400, smsCaptchaProperty.getLimitCountEveryDay());
+        return redisLimit.limit("limit.count.day:" + mobile, 86400, smsCaptchaProperty.getLimitCountDay());
     }
 
     /**
@@ -60,12 +57,22 @@ public class SmsService {
     public boolean send(String mobile) {
 
         // 发送手机验证码
-        //
-        String captcha = RandomNumUtil.getRandomNum(4);
+        String captcha = RandomNumUtil.getRandomNum(smsCaptchaProperty.getLength());
+
         //lingkaiSmsService.send(mobile, captcha);
-        log.info("手机: {}  内容: {}  ", mobile, captcha);
+
+        log.info("手机: {}  验证码: {}  ", mobile, captcha);
+
+        // 记录日志
+        log(mobile, captcha);
 
         return true;
     }
+
+    // 不打开事务自动提交
+    private void log(String mobile, String captcha) {
+
+    }
+
 
 }

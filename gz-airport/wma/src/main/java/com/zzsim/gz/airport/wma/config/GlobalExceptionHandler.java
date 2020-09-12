@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -30,10 +29,10 @@ public class GlobalExceptionHandler {
 
     /**
      * jsr-303异常报错
-     * 对象参数接收请求体，即 @RequestBody：
-     * MethodArgumentNotValidException
      * 请求参数绑定到对象参数上：
      * BindException
+     * 对象参数接收请求体，即 @RequestBody：
+     * MethodArgumentNotValidException
      * 普通参数：
      * ConstraintViolationException
      * 必填参数缺失：
@@ -47,12 +46,12 @@ public class GlobalExceptionHandler {
         // 记录日志
         logError(request, e);
 
-        if (e instanceof MethodArgumentNotValidException) {
+        if (e instanceof BindException) {
             /*
-             *  @RequestBody 绑定参数错误
+             * 请求参数绑定错误
              */
-            MethodArgumentNotValidException t = (MethodArgumentNotValidException) e;
-            String msg  =t.getBindingResult()
+            BindException t = (BindException) e;
+            String msg = t.getBindingResult()
                     .getAllErrors()
                     .stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage)
@@ -61,11 +60,11 @@ public class GlobalExceptionHandler {
             return OptResult.fail(msg);
         }
 
-        if (e instanceof BindException) {
+        if (e instanceof MethodArgumentNotValidException) {
             /*
-             * 请求参数绑定错误
+             *  @RequestBody 绑定参数错误
              */
-            BindException t = (BindException) e;
+            MethodArgumentNotValidException t = (MethodArgumentNotValidException) e;
             String msg = t.getBindingResult()
                     .getAllErrors()
                     .stream()

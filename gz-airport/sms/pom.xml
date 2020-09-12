@@ -9,9 +9,9 @@
         <version>0.0.1</version>
     </parent>
 
-    <artifactId>sms-lingkai</artifactId>
+    <artifactId>sms</artifactId>
 
-    <name>sms-lingkai</name>
+    <name>sms</name>
     <description>广州机场项目凌凯短信服务</description>
 
     <properties>

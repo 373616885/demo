@@ -9,7 +9,7 @@ import lombok.experimental.Accessors;
  */
 @Data
 @Accessors(chain = true)
-public class OptResult<T> {
+public final class OptResult<T> {
 
     private boolean success;
 

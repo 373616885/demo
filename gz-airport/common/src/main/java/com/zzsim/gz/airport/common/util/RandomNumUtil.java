@@ -1,5 +1,8 @@
 package com.zzsim.gz.airport.common.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -8,10 +11,8 @@ import java.util.concurrent.ThreadLocalRandom;
  * @author qinjp
  * @date 2020/9/10
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RandomNumUtil {
-
-    private RandomNumUtil() {
-    }
 
     private static final int LEN_PERSONAL_SIGNUP = 6;
 

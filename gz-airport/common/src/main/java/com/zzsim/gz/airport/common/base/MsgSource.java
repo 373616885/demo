@@ -1,5 +1,7 @@
 package com.zzsim.gz.airport.common.base;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Enumeration;
@@ -13,10 +15,8 @@ import java.util.ResourceBundle;
  * @author qinjp
  * @date 2020/9/10
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class MsgSource {
-
-    private MsgSource() {
-    }
 
     private static final Map<String, String> MESSAGES = new HashMap<>();
 

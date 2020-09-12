@@ -1,15 +1,16 @@
 package com.zzsim.gz.airport.common.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import java.util.regex.Pattern;
 
 /**
  * @author qinjp
  * @date 2020/9/11
  */
-public class RegexUtils {
-
-    private RegexUtils() {
-    }
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class RegexUtils {
 
     private static final Pattern MOBILE_PHONE_PATTERN = Pattern.compile("^[1]\\d{10}$");
 

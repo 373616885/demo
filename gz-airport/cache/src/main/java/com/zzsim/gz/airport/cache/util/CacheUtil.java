@@ -1,9 +1,9 @@
-package com.zzsim.gz.airport.common.util;
-
-import java.util.concurrent.TimeUnit;
+package com.zzsim.gz.airport.cache.util;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
+import java.util.concurrent.TimeUnit;
 
 public class CacheUtil {
 
@@ -17,10 +17,10 @@ public class CacheUtil {
 					//.expireAfterAccess(2,TimeUnit.SECONDS)
 					// 在给定时间内没有被写访问（创建或覆盖），则清除 
 					.expireAfterWrite(2, TimeUnit.SECONDS)
-					// 设置缓存容器的初始容量为10
+					// 设置缓存容器的初始容量为100
 					.initialCapacity(100)
-					// 设置缓存最大容量为100，超过100之后就会按照LRU最近虽少使用算法来移除缓存项
-					.maximumSize(100)
+					// 设置缓存最大容量为10000，超过10000之后就会按照LRU最近虽少使用算法来移除缓存项
+					.maximumSize(10000)
 					.build();
 	
 	public static void main(String[] args) {

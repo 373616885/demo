@@ -42,17 +42,9 @@ public class SmsService {
      * 限制每小时发送次数
      * 限制手机每天次数
      */
-    public boolean sendAfter(String mobile) {
-//        //
-//        stringRedisTemplate.opsForValue().set(CacheConstant.KEY_PREFIX +
-//                        ":" + mobile +":" + smsCaptchaProperty.getLimitCountHour(), mobile,
-//                Duration.ofHours(1));
-//
-//        //
-//
-//        stringRedisTemplate.opsForValue().increment()
+    public void sendAfter(String mobile) {
 
-        return true;
+
     }
 
     /**

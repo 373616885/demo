@@ -27,12 +27,12 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
      * 对Controller直接返回的字符串不做处理
      */
     @Override
-    public boolean supports(@NonNull MethodParameter returnType, @NonNull Class<? extends HttpMessageConverter<?>> converterType) {
+    public boolean supports(MethodParameter returnType, @NonNull Class<? extends HttpMessageConverter<?>> converterType) {
         return Objects.requireNonNull(returnType.getMethod()).getReturnType() != String.class;
     }
 
     @Override
-    public Object beforeBodyWrite(@NonNull Object body, @NonNull MethodParameter returnType, @NonNull MediaType selectedContentType, @NonNull Class<? extends HttpMessageConverter<?>> selectedConverterType, @NonNull ServerHttpRequest request, @NonNull ServerHttpResponse response) {
+    public Object beforeBodyWrite(Object body, @NonNull MethodParameter returnType, @NonNull MediaType selectedContentType, @NonNull Class<? extends HttpMessageConverter<?>> selectedConverterType, @NonNull ServerHttpRequest request, @NonNull ServerHttpResponse response) {
         return body instanceof OptResult ? body : OptResult.success(body);
     }
 }

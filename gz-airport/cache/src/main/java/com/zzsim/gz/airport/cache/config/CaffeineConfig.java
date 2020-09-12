@@ -3,7 +3,7 @@ package com.zzsim.gz.airport.cache.config;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.google.common.collect.ImmutableList;
-import com.zzsim.gz.airport.cache.base.Constant;
+import com.zzsim.gz.airport.cache.base.CacheConstant;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
@@ -37,7 +37,7 @@ public class CaffeineConfig {
 
 
     private static List<String> getNames(){
-        return ImmutableList.of(Constant.KEY_PREFIX);
+        return ImmutableList.of(CacheConstant.KEY_PREFIX);
     }
 
 }

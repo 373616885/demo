@@ -15,6 +15,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.util.Objects;
 
 /**
  * 凌凯短信业务类
@@ -77,7 +78,7 @@ public class LingkaiSmsService {
         InputStreamReader isr = new InputStreamReader(new URL(path).openStream(), StandardCharsets.UTF_8);
 
         @Cleanup
-        BufferedReader br = new BufferedReader(isr);
+        BufferedReader br = new BufferedReader(Objects.requireNonNull(isr));
 
         return br.readLine();
     }

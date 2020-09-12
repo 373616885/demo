@@ -1,15 +1,11 @@
 package com.zzsim.gz.airport.wma.service.sms;
 
-import com.zzsim.gz.airport.cache.base.CacheConstant;
 import com.zzsim.gz.airport.common.util.RandomNumUtil;
 import com.zzsim.gz.airport.sms.service.LingkaiSmsService;
 import com.zzsim.gz.airport.wma.domain.sms.SmsCaptchaProperty;
 import lombok.AllArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author qinjp
@@ -24,6 +20,7 @@ public class SmsService {
     private final LingkaiSmsService lingkaiSmsService;
 
     private final SmsCaptchaProperty smsCaptchaProperty;
+
 
     /**
      * 发送验证码规则限制
@@ -43,8 +40,7 @@ public class SmsService {
      *  限制手机每天次数
      */
     public void sendAfter(String mobile) {
-
-
+        // TODO
     }
 
     /**

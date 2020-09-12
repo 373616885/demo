@@ -1,4 +1,4 @@
-package com.zzsim.gz.airport.cache.util;
+package com.zzsim.gz.airport.cache.component;
 
 import com.zzsim.gz.airport.cache.base.CacheConstant;
 import lombok.AllArgsConstructor;

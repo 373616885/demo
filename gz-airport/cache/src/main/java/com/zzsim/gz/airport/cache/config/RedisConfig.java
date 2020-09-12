@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zzsim.gz.airport.cache.base.CacheConstant;
-import com.zzsim.gz.airport.cache.util.RedisLimit;
+import com.zzsim.gz.airport.cache.component.RedisLimit;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;

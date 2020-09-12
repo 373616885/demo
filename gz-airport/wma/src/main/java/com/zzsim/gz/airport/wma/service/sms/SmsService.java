@@ -37,10 +37,10 @@ public class SmsService {
     }
 
     /**
-     * 发送验证码在redis存规则配置
+     * 发送验证码存规则配置
      * 规则：
-     * 限制每小时发送次数
-     * 限制手机每天次数
+     *  限制每小时发送次数
+     *  限制手机每天次数
      */
     public void sendAfter(String mobile) {
 

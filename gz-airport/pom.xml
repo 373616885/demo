@@ -24,6 +24,7 @@
         <module>sms</module>
         <module>common</module>
         <module>cache</module>
+        <module>mybatis</module>
     </modules>
 
     <properties>

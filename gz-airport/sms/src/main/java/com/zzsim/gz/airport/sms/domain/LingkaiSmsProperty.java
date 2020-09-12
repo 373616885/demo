@@ -35,31 +35,7 @@ public class LingkaiSmsProperty {
     /**
      * 短信模板
      */
-    private String templateCode;
+    private String template;
 
-    /**
-     * 短信模板参数
-     */
-    private String templateParam;
-
-    /**
-     * 短信验证码有效时间，单位：秒（默认10分钟）
-     */
-    private Integer captchaTimeout = 600;
-
-    /**
-     * 短信验证码位数（默认6位）
-     */
-    private Integer captchaLength = 6;
-
-    /**
-     * 限制每小时次数（默认5次）
-     */
-    private Integer limitCountHour = 5;
-
-    /**
-     * 限制手机每天次数（默认20次）
-     */
-    private Integer limitCountEveryDay = 20;
 
 }

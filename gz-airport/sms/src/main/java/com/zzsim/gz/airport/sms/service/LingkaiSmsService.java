@@ -1,6 +1,5 @@
 package com.zzsim.gz.airport.sms.service;
 
-import com.zzsim.gz.airport.common.util.RandomNumUtil;
 import com.zzsim.gz.airport.sms.domain.LingkaiSmsProperty;
 import lombok.AllArgsConstructor;
 import lombok.Cleanup;
@@ -8,7 +7,6 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -16,6 +14,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 
 /**
  * 凌凯短信业务类
@@ -32,19 +31,16 @@ public class LingkaiSmsService {
 
     /**
      * 发送短信验证码
-     * ImmutablePair
-     *  L 是否发送成功
-     *  R 发送短信内容
-     * @param mobile 手机号
+     *
+     * @param mobile  手机号
+     * @param captcha 验证码
      */
     @SneakyThrows(Exception.class)
-    public ImmutablePair<Boolean, String> sendMobileCaptcha(@NonNull String mobile) {
+    public boolean send(@NonNull String mobile, @NonNull String captcha) {
 
-        Integer length = this.lingkaiSmsProperty.getCaptchaLength();
-        // 产生随机数字短信验证码
-        String captcha = RandomNumUtil.getRandomNum(length);
         // 发送内容
-        String content = this.lingkaiSmsProperty.getTemplateCode().replaceAll(this.lingkaiSmsProperty.getTemplateParam(), captcha);
+        String content = MessageFormat.format(this.lingkaiSmsProperty.getTemplate(), captcha);
+
         // 凌凯发送短信
         String data = send(this.lingkaiSmsProperty.getUrl(),
                 this.lingkaiSmsProperty.getUsername(),
@@ -55,9 +51,7 @@ public class LingkaiSmsService {
         log.info("手机: {}  内容: {}  返回值：{}", mobile, content, data);
 
         // 判断是否发送成功
-        Boolean success = StringUtils.isNotBlank(data) && Integer.parseInt(data) > 0;
-
-        return ImmutablePair.of(success, content);
+        return StringUtils.isNotBlank(data) && Integer.parseInt(data) > 0;
     }
 
 

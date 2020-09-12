@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 @PropertySource("classpath:sms.properties")
-@ConfigurationProperties(prefix = "sms.lingkai", ignoreUnknownFields = false)
+@ConfigurationProperties(prefix = "sms.lingkai")
 public class LingkaiSmsProperty {
 
     /**

@@ -43,7 +43,7 @@ public class LingkaiSmsService {
         String content = MessageFormat.format(this.lingkaiSmsProperty.getTemplate(), captcha);
 
         // 凌凯发送短信
-        String data = lingkaiSendSms(this.lingkaiSmsProperty.getUrl(),
+        String data = sendSms(this.lingkaiSmsProperty.getUrl(),
                 this.lingkaiSmsProperty.getUsername(),
                 this.lingkaiSmsProperty.getPassword(),
                 content,
@@ -66,7 +66,7 @@ public class LingkaiSmsService {
      * @param phoneNumbers 手机号(多个逗号分隔)
      */
     @SneakyThrows(Exception.class)
-    private String lingkaiSendSms(String url, String username, String password, String content, String phoneNumbers) {
+    private String sendSms(String url, String username, String password, String content, String phoneNumbers) {
 
         String path = url +
                 "?CorpID=" + username +

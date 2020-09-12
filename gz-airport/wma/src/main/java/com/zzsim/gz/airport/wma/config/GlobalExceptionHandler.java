@@ -28,6 +28,18 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     /**
+     * 所有异常报错
+     */
+    @ExceptionHandler(value = Exception.class)
+    public OptResult<String> allExceptionHandler(HttpServletRequest request, Exception e) {
+        // 记录日志
+        logError(request, e);
+        // 默认值
+        return OptResult.fail(MsgSource.getMsg(e.getMessage()));
+    }
+
+
+    /**
      * jsr-303异常报错
      * 请求参数绑定到对象参数上：
      * BindException
@@ -100,17 +112,6 @@ public class GlobalExceptionHandler {
         return OptResult.fail(MsgSource.getMsg(e.getMessage()));
     }
 
-
-    /**
-     * 所有异常报错
-     */
-    @ExceptionHandler(value = Exception.class)
-    public OptResult<String> allExceptionHandler(HttpServletRequest request, Exception e) {
-        // 记录日志
-        logError(request, e);
-        // 默认值
-        return OptResult.fail(MsgSource.getMsg(e.getMessage()));
-    }
 
     private void logError(HttpServletRequest request, Exception e) {
         log.error("异常堆栈:", e);

@@ -1,9 +1,11 @@
 package com.zzsim.gz.airport.wma.service.sms;
 
+import com.zzsim.gz.airport.cache.component.RedisLimit;
 import com.zzsim.gz.airport.common.util.RandomNumUtil;
 import com.zzsim.gz.airport.sms.service.LingkaiSmsService;
 import com.zzsim.gz.airport.wma.domain.sms.SmsCaptchaProperty;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
  * @author qinjp
  * @date 2020/9/11
  */
+@Slf4j
 @Service
 @AllArgsConstructor
 public class SmsService {
@@ -21,6 +24,7 @@ public class SmsService {
 
     private final SmsCaptchaProperty smsCaptchaProperty;
 
+    private final RedisLimit redisLimit;
 
     /**
      * 发送验证码规则限制
@@ -28,19 +32,14 @@ public class SmsService {
      * 限制每小时发送次数
      * 限制手机每天次数
      */
-    public boolean sendBefore(String mobile) {
-        // TODO
-        return true;
-    }
-
-    /**
-     * 发送验证码存规则配置
-     * 规则：
-     *  限制每小时发送次数
-     *  限制手机每天次数
-     */
-    public void sendAfter(String mobile) {
-        // TODO
+    public boolean sendLimit(String mobile) {
+        // 限制每小时发送次数
+        boolean limitCountHour = redisLimit.limit("limit.count.hour:" + mobile, 3600, smsCaptchaProperty.getLimitCountHour());
+        if (!limitCountHour) {
+            return false;
+        }
+        // 限制手机24小时
+        return redisLimit.limit("limit.count.everyDay:" + mobile, 86400, smsCaptchaProperty.getLimitCountEveryDay());
     }
 
     /**
@@ -63,8 +62,8 @@ public class SmsService {
         // 发送手机验证码
         //
         String captcha = RandomNumUtil.getRandomNum(4);
-        lingkaiSmsService.send(mobile, captcha);
-
+        //lingkaiSmsService.send(mobile, captcha);
+        log.info("手机: {}  内容: {}  ", mobile, captcha);
 
         return true;
     }

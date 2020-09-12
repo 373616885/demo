@@ -28,7 +28,15 @@ public class SmsController {
         if (!RegexUtils.validateMobile(mobile.getMobile())) {
             return OptResult.fail(MsgSource.getMsg("incorrect.format.o.mobile.phone"));
         }
-        log.info("{} 发送短信验证码",mobile);
+        // 手机次数限制
+        if (!smsService.sendLimit(mobile.getMobile())) {
+            return OptResult.fail(MsgSource.getMsg("mobile.captcha.send.count.limit"));
+        }
+        // 校验手机是否存在
+        if (!smsService.checkMobileIsExist(mobile.getMobile())) {
+            return OptResult.fail(MsgSource.getMsg("mobile.not.exist"));
+        }
+        log.info("{} 发送短信验证码", mobile);
         smsService.send(mobile.getMobile());
         return OptResult.success();
     }

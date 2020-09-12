@@ -3,7 +3,7 @@ package com.zzsim.gz.airport.cache.config;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zzsim.gz.airport.cache.base.Constant;
+import com.zzsim.gz.airport.cache.base.CacheConstant;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
@@ -37,7 +37,7 @@ public class RedisConfig {
         return (target, method, params) -> {
             StringBuilder sb = new StringBuilder();
             // 统一前缀 gz:airport
-            sb.append(Constant.KEY_PREFIX);
+            sb.append(CacheConstant.KEY_PREFIX);
             sb.append(":");
             sb.append(target.getClass().getName());
             sb.append(method.getName());

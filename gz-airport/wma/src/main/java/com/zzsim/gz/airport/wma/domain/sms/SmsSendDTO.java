@@ -1,4 +1,4 @@
-package com.zzsim.gz.airport.wma.domain;
+package com.zzsim.gz.airport.wma.domain.sms;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

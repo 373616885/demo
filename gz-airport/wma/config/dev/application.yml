@@ -6,6 +6,18 @@ server:
 logging:
   config: classpath:log4j2.xml
 
+sms:
+  captcha:
+    #短信验证码有效时间，单位秒
+    timeout: 600
+    #短信验证码位数
+    length: 4
+    #限制每小时发送次数
+    limitCountHour: 5
+    #限制手机每天次数
+    limitCountEveryDay: 20
+
+
 spring:
   resources:
     add-mappings: false

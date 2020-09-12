@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
  * @date 2020/9/12
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class Constant {
+public final class CacheConstant {
 
     public static final String  KEY_PREFIX ="gz:airport";
 

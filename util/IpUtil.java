@@ -76,7 +76,7 @@ public class IpUtil {
         }
         // X-Forwarded-For 为空就找 nginx X-Real-IP
         String nginxHeader = request.getHeader(X_REAL_IP);
-        return StringUtils.isBlank(nginxHeader) ? request.getRemoteAddr() : nginxHeader;
+        return StringUtils.isBlank(nginxHeader) ? originalRemoteAddr : nginxHeader;
     }
 
 

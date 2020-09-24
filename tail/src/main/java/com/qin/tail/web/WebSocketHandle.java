@@ -22,7 +22,7 @@ public class WebSocketHandle {
     public void onOpen(Session session) {
         try {
             // 执行tail -f命令
-            process = Runtime.getRuntime().exec("tail -f /var/log/syslog");
+            process = Runtime.getRuntime().exec("tail -f -n 50 /usr/local/docker/log/access.log ");
             inputStream = process.getInputStream();
             // 一定要启动新的线程，防止InputStream阻塞处理WebSocket的线程
             LogThread thread = new LogThread(inputStream, session);

@@ -1,5 +1,7 @@
 package com.qin.tail.web;
 
+import org.springframework.stereotype.Component;
+
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnOpen;
@@ -8,6 +10,7 @@ import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.io.InputStream;
 
+@Component
 @ServerEndpoint("/log")
 public class WebSocketHandle {
 

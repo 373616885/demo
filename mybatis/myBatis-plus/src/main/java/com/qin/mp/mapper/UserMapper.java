@@ -1,6 +1,7 @@
 package com.qin.mp.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
@@ -19,4 +20,6 @@ public interface UserMapper extends BaseMapper<User> {
     List<User> selectAllXml(@Param(Constants.WRAPPER) Wrapper<User> wrapper);
 
     IPage<User> selectPageVo(Page<User> page,@Param("password") String password);
+
+    IPage<User> selectMyPage(Page<User> page, @Param(Constants.WRAPPER) QueryWrapper<User> queryWrapper);
 }

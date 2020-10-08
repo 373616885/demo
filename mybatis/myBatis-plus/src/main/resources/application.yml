@@ -11,4 +11,19 @@ logging:
 
 mybatis-plus:
   # 自定义xml文件路径
-  mapper-locations: classpath:com/qin/mp/mapper/*Mapper.xml
+  # maven 多模块项目的扫描路径需以 classpath* 开头（即加载多个jar包下的xml文件）
+  mapper-locations: classpath*:com/qin/mp/mapper/*Mapper.xml
+  # config-location: classpath*:mybatis-config.xml
+  # resultType 不需要输入全路径名
+  type-aliases-package: com.qin.mp.domain
+  # configuration 和 config-location 不能同时出现
+  configuration:
+    # 默认是true 驼峰自动映射 mybatis-plus默认是true  mybatis默认是false
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      # 一般不需要配--默认根据url判断
+      db-type: mysql
+      id-type: ASSIGN_ID
+      # 表前缀名
+      # table-prefix: t_

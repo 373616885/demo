@@ -1,9 +1,6 @@
 package com.qin.mp.domain;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +20,7 @@ public class User implements Serializable {
     @TableId(value = "user_id", type = IdType.AUTO)
     private Long userId;
 
-    @TableField("name")
+    @TableField(value = "name" ,updateStrategy = FieldStrategy.NOT_EMPTY,insertStrategy = FieldStrategy.NOT_EMPTY)
     private String name;
 
     @TableField("age")

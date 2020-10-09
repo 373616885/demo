@@ -54,10 +54,20 @@ public class PageTest {
 
     @Test
     public void SelectPageCustomize() {
+        Page<User> page = new Page<>(1, 3);
+        IPage<User> IPages = userMapper.selectPageVo(page,"373616885");
+    }
+
+    @Test
+    public void SelectMyPage() {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         Page<User> page = new Page<>(1, 3);
-        queryWrapper.lt("age", 40);
-        IPage<User> IPages = userMapper.selectPageVo(page,"373616885");
+        queryWrapper.lt("age", 90);
+        IPage<User> IPages = userMapper.selectMyPage(page,queryWrapper);
+
+        System.out.println("总页数：" + IPages.getPages());
+        System.out.println("总记录数：" + IPages.getTotal());
+        IPages.getRecords().forEach(System.out::println);
     }
 
 }

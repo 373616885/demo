@@ -11,5 +11,8 @@
     <select id="selectPageVo" resultType="com.qin.mp.domain.User">
         select user_id,name from t_user where password = #{password}
     </select>
+    <select id="selectMyPage" resultType="com.qin.mp.domain.User">
+        select * from t_user ${ew.customSqlSegment}
+    </select>
 
 </mapper>

@@ -24,12 +24,14 @@ public class Service {
 
     @Test
     public void chain() {
+        // 链式调用
         List<User> users = userService.lambdaQuery().eq(User::getAge, 30).like(User::getName,"南").list();
         System.out.println(users);
     }
 
     @Test
     public void chain1() {
+        // 链式调用
         Boolean result = userService.lambdaUpdate().ge(User::getAge, 50).set(User::getEmail,"78802581@qq.com").update();
         System.out.println(result);
     }

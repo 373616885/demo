@@ -89,21 +89,21 @@ monitorInterval : 用于指定log4j自动重新配置的监测间隔时间，单
             	DefaultRolloverStrategy字段中加入max=“30”经测试是配合SizeBasedTriggeringPolicy限制%i的存在数量
             	前面的会被后面的覆盖
             -->
-            <DefaultRolloverStrategy max="30"/>
-        </RollingFile>
+        <DefaultRolloverStrategy max="30"/>
+    </RollingFile>
 
-        <RollingFile name="RollingFileError" fileName="${ERROR_LOG_FILE_NAME}/error.log"
-                     filePattern="${ERROR_LOG_FILE_NAME}/$${date:yyyy-MM}/error-%d{yyyy-MM-dd}-%i.log">
-            <ThresholdFilter level="error" onMatch="ACCEPT"
-                             onMismatch="DENY"/>
-            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
-            <Policies>
-                <!-- log4j2的按分钟 分日志文件 : warn-%d{yyyy-MM-dd-HH-mm}-%i.log-->
-                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
-                <SizeBasedTriggeringPolicy size="500 MB"/>
-            </Policies>
-            <DefaultRolloverStrategy max="30"/>
-        </RollingFile>
+    <RollingFile name="RollingFileError" fileName="${ERROR_LOG_FILE_NAME}/error.log"
+                 filePattern="${ERROR_LOG_FILE_NAME}/$${date:yyyy-MM}/error-%d{yyyy-MM-dd}-%i.log">
+        <ThresholdFilter level="error" onMatch="ACCEPT"
+                         onMismatch="DENY"/>
+        <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        <Policies>
+            <!-- log4j2的按分钟 分日志文件 : warn-%d{yyyy-MM-dd-HH-mm}-%i.log-->
+            <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            <SizeBasedTriggeringPolicy size="500 MB"/>
+        </Policies>
+        <DefaultRolloverStrategy max="30"/>
+    </RollingFile>
 
     </Appenders>
 
@@ -129,7 +129,7 @@ monitorInterval : 用于指定log4j自动重新配置的监测间隔时间，单
         <!--             <appender-ref ref="RollingFileWarn"/> -->
         <!--             <appender-ref ref="RollingFileError"/> -->
         <!--         </root> -->
-
+        <!--建立一个默认的root的logger-->
         <asyncRoot level="all">
             <appender-ref ref="Console"/>
             <!--            <appender-ref ref="File"/> -->

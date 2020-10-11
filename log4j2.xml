@@ -6,9 +6,9 @@ monitorInterval : 用于指定log4j自动重新配置的监测间隔时间，单
 <Configuration status="WARN" monitorInterval="30">
     <Properties>
         <!-- 配置日志文件输出目录 ${sys:user.home} -->
-        <Property name="LOG_HOME">logs/jwt</Property>
-        <property name="ERROR_LOG_FILE_NAME">logs/jwt/error</property>
-        <property name="WARN_LOG_FILE_NAME">logs/jwt/warn</property>
+        <Property name="LOG_HOME">logs/web</Property>
+        <property name="ERROR_LOG_FILE_NAME">logs/web/error</property>
+        <property name="WARN_LOG_FILE_NAME">logs/web/warn</property>
         <property name="PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t-%L] %-5level %logger{36} - %msg%n</property>
     </Properties>
 
@@ -16,7 +16,7 @@ monitorInterval : 用于指定log4j自动重新配置的监测间隔时间，单
         <!--这个输出控制台的配置 -->
         <Console name="Console" target="SYSTEM_OUT">
             <!-- 控制台只输出level及以上级别的信息(onMatch),其他的直接拒绝(onMismatch) -->
-            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <ThresholdFilter level="all" onMatch="ACCEPT" onMismatch="DENY"/>
             <!-- 输出日志的格式 -->
             <!-- 
                 %d{yyyy-MM-dd HH:mm:ss, SSS} : 日志生产时间 
@@ -89,39 +89,51 @@ monitorInterval : 用于指定log4j自动重新配置的监测间隔时间，单
             	DefaultRolloverStrategy字段中加入max=“30”经测试是配合SizeBasedTriggeringPolicy限制%i的存在数量
             	前面的会被后面的覆盖
             -->
-        <DefaultRolloverStrategy max="30"/>
-    </RollingFile>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
 
-    <RollingFile name="RollingFileError" fileName="${ERROR_LOG_FILE_NAME}/error.log"
-                 filePattern="${ERROR_LOG_FILE_NAME}/$${date:yyyy-MM}/error-%d{yyyy-MM-dd}-%i.log">
-        <ThresholdFilter level="error" onMatch="ACCEPT"
-                         onMismatch="DENY"/>
-        <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
-        <Policies>
-            <!-- log4j2的按分钟 分日志文件 : warn-%d{yyyy-MM-dd-HH-mm}-%i.log-->
-            <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
-            <SizeBasedTriggeringPolicy size="500 MB"/>
-        </Policies>
-        <DefaultRolloverStrategy max="30"/>
-    </RollingFile>
+        <RollingFile name="RollingFileError" fileName="${ERROR_LOG_FILE_NAME}/error.log"
+                     filePattern="${ERROR_LOG_FILE_NAME}/$${date:yyyy-MM}/error-%d{yyyy-MM-dd}-%i.log">
+            <ThresholdFilter level="error" onMatch="ACCEPT"
+                             onMismatch="DENY"/>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <Policies>
+                <!-- log4j2的按分钟 分日志文件 : warn-%d{yyyy-MM-dd-HH-mm}-%i.log-->
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="500 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
 
     </Appenders>
 
     <!--然后定义logger，只有定义了logger并引入的appender，appender才会生效-->
     <Loggers>
-        <!--过滤掉spring和mybatis的一些无用的DEBUG信息-->
-        <logger name="org.springframework" level="all"></logger>
-        <logger name="org.mybatis" level="all"></logger>
 
-        <!-- 第三方日志系统
-        <logger name="org.springframework.core" level="info" />
-        <logger name="org.springframework.beans" level="info" />
-        <logger name="org.springframework.context" level="info" />
-        <logger name="org.springframework.web" level="info" />
-        <logger name="org.jboss.netty" level="warn" />
-        <logger name="org.apache.http" level="warn" />
+        <!--我们只让这个logger输出trace信息，其他的都是error级别-->
+        <!--
+        additivity开启的话，由于这个logger也是满足root的，所以会被打印两遍。
+        不过root logger 的level是error，为什么Bar 里面的trace信息也被打印两遍呢
         -->
-
+        <!-- 单独给com.example.demo做一个配置 -->
+        <logger name="com.example.demo" level="trace" additivity="false">
+            <appender-ref ref="Console"/>
+        </logger>
+        <!--默认情况下子Logger会继承父Logger的appender，也就是说子Logger会在父Logger的appender里输出-->
+        <!--若是additivity设为false，则子Logger只会在自己的appender里输出-->
+        <logger name="com.example" level="error">
+            <appender-ref ref="Console"/>
+        </logger>
+        <!--
+            一般情况下只有父类 是error
+            子类要输出的 info 比父类的小
+            才需要在子类的  logger 配置 appender
+            这个子类 会继承父Logger的appender
+            导致输出两次 这时候才需要在子类的 logger 加上  additivity="false"
+            才不会输出两次
+            子类的  logger 没有配置 appender 就不用配置 additivity="false"
+            直接继承父类的 appender
+         -->
         <!-- 配置日志的根节点 -->
         <!--         <root level="all"> -->
         <!--             <appender-ref ref="Console"/> -->
@@ -129,8 +141,10 @@ monitorInterval : 用于指定log4j自动重新配置的监测间隔时间，单
         <!--             <appender-ref ref="RollingFileWarn"/> -->
         <!--             <appender-ref ref="RollingFileError"/> -->
         <!--         </root> -->
+
         <!--建立一个默认的root的logger-->
-        <asyncRoot level="all">
+        <!-- 没有在配置文件的loggers下面做配置，他们也都能够输出，因为他们都继承了root的log配置 -->
+        <asyncRoot level="error">
             <appender-ref ref="Console"/>
             <!--            <appender-ref ref="File"/> -->
             <!--            <appender-ref ref="RollingFileInfo"/>-->

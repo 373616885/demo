@@ -122,7 +122,7 @@ monitorInterval : 用于指定log4j自动重新配置的监测间隔时间，单
         <!--             <appender-ref ref="RollingFileWarn"/> -->
         <!--             <appender-ref ref="RollingFileError"/> -->
         <!--         </root> -->
-
+		<!--建立一个默认的root的logger-->
         <asyncRoot level="info">
             <!-- <appender-ref ref="Console"/> -->
             <!-- <appender-ref ref="File"/> -->

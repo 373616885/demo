@@ -1,5 +1,6 @@
 package com.qin.mp;
 
+import com.qin.mp.config.PageConfig;
 import com.qin.mp.domain.User;
 import com.qin.mp.mapper.UserMapper;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ public class Base {
 
 	@Test
 	public void SelectAll() {
+		//PageConfig.mytable.set("user");
 		System.out.println(("----- selectAll method test ------"));
 		List<User> userList = userMapper.selectList(null);
 		userList.forEach(System.out::println);

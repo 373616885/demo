@@ -16,6 +16,8 @@ mybatis-plus:
   # config-location: classpath*:mybatis-config.xml
   # resultType 不需要输入全路径名
   type-aliases-package: com.qin.mp.domain
+  #枚举属性配置扫描
+  type-enums-package: com.qin.mp.**.enums
   # configuration 和 config-location 不能同时出现
   configuration:
     # 默认是true 驼峰自动映射 mybatis-plus默认是true  mybatis默认是false

@@ -2,6 +2,7 @@ package com.qin.mp.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.qin.mp.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,4 +45,7 @@ public class User implements Serializable {
      */
     @TableField(exist = false)
     private String remark;
+
+    @TableField("status")
+    private Status status;
 }

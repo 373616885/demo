@@ -34,7 +34,8 @@ public class DisWorkHandler {
         Disruptor<LongEvent> disruptor = new Disruptor<LongEvent>(eventFactory,
                 ringBufferSize, Executors.defaultThreadFactory(), ProducerType.SINGLE,
                 new SleepingWaitStrategy());
-
+        // 多消费者重复处理生产者的消息，则使用disruptor.handleEventsWith方法将消费者传入
+        // 消费者不重复的处理生产者的消息，则使用disruptor.handleEventsWithWorkerPool方法将消费者传入
         disruptor.handleEventsWithWorkerPool(new Consumer1(),new Consumer2());
         disruptor.start();
         // 7.发布事件

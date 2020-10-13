@@ -8,6 +8,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 参考：AsyncLoggerDisruptor
+ *
  * @author qinjp
  * @date 2019-07-08
  **/

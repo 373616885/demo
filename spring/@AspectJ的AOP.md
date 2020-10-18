@@ -135,3 +135,70 @@ public class DogAspect {
 </beans>
 ```
 
+```java
+package com.qin.doc.aop;
+
+import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
+
+@Slf4j
+@Aspect
+@Component
+public class AspectConfig {
+
+//   @Pointcut("execution(public * com.qin.doc.web..*.*(..))")
+//    public void pointcut(){}
+
+    // 定义切点Pointcut  自行写入对应的controller包路径
+//    @Pointcut("execution(* com.qin.doc.web..*.*(..))")
+//    public void pointcut3() {
+//    }
+
+    // @annotation 在方法上
+//    @Pointcut("@annotation(org.springframework.web.bind.annotation.GetMapping) || @annotation(org.springframework.web.bind.annotation.PostMapping)")
+//    public void pointcut1() {
+//    }
+	 // @within 在类上
+//    @Pointcut("@within(org.springframework.stereotype.Controller) || @within(org.springframework.web.bind.annotation.RestController)")
+//    public void pointcut2() {
+//    }
+
+    @Pointcut("pointcut3() || pointcut1() || pointcut2() ")
+    public void pointcut() {
+    }
+
+
+    @Around("pointcut()")
+    public Object around(ProceedingJoinPoint pjp) throws Throwable {
+        RequestAttributes ra = RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes sra = (ServletRequestAttributes) ra;
+        HttpServletRequest request = sra.getRequest();
+
+        String url = request.getRequestURL().toString();
+        String method = request.getMethod();
+        String uri = request.getRequestURI();
+        String queryString = request.getQueryString();
+        //这里可以获取到get请求的参数和其他信息
+        log.info("请求开始, 各个参数, url: {}, method: {}, uri: {}, params: {}", url, method, uri, queryString);
+        //重点 这里就是获取@RequestBody参数的关键  调试的情况下 可以看到o变量已经获取到了请求的参数
+        Object[] o = pjp.getArgs();
+
+        // result的值就是被拦截方法的返回值
+        Object result = pjp.proceed();
+        System.out.println(o);
+        return result;
+    }
+
+}
+
+```
+

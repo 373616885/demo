@@ -4,6 +4,14 @@ server:
 logging:
   config: classpath:log4j2.xml
 
+spring:
+  profiles:
+    active: dev
+
+
+#spring:
+#  resources:
+#    add-mappings: false
 #spring:
 #  mvc:
 #    static-path-pattern: /swagger/**

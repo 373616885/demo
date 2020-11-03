@@ -20,7 +20,7 @@ public class UpdateTest {
         User user = new User();
         user.setEmail("373616885@qq.com");
         user.setAge(38);
-        user.setUserId(1L);
+        user.setUserId("1L");
         int rows = userMapper.updateById(user);
         System.out.println("影响行数：" + rows);
     }

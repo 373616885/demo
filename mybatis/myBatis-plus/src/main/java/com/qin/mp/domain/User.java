@@ -18,8 +18,8 @@ import java.time.LocalDateTime;
 @TableName("t_user")
 public class User implements Serializable {
 
-    @TableId(value = "user_id", type = IdType.AUTO)
-    private Long userId;
+    @TableId(value = "user_id", type = IdType.ASSIGN_UUID)
+    private String userId;
 
     @TableField(value = "name" ,updateStrategy = FieldStrategy.NOT_EMPTY,insertStrategy = FieldStrategy.NOT_EMPTY)
     private String name;

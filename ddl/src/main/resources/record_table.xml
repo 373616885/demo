@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<!DOCTYPE database SYSTEM "http://db.apache.org/torque/dtd/database">
+  <database name="gz_airport">
+    <table name="t_record">
+      <column name="id" primaryKey="true" required="true" type="INTEGER" size="10" autoIncrement="true" description="ID"/>
+      <column name="hash_value" primaryKey="false" required="true" type="VARCHAR" size="64" autoIncrement="false" description="考试记录唯一值"/>
+      <column name="pass" primaryKey="false" required="false" type="BIT" size="1" default="0" autoIncrement="false" description="1：通过 0：不通过"/>
+      <column name="sim_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="模拟器ID"/>
+      <column name="sim_name" primaryKey="false" required="false" type="VARCHAR" size="30" autoIncrement="false" description="模拟器名称"/>
+      <column name="driver_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="驾驶员ID"/>
+      <column name="mobile" primaryKey="false" required="false" type="CHAR" size="11" autoIncrement="false" description="手机号"/>
+      <column name="name" primaryKey="false" required="false" type="VARCHAR" size="20" autoIncrement="false" description="姓名"/>
+      <column name="org_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="部门ID"/>
+      <column name="org_name" primaryKey="false" required="false" type="VARCHAR" size="50" autoIncrement="false" description="部门名称"/>
+      <column name="org_abbr" primaryKey="false" required="false" type="VARCHAR" size="50" autoIncrement="false" description="部门简称"/>
+      <column name="order_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="订单ID"/>
+      <column name="order_no" primaryKey="false" required="false" type="VARCHAR" size="30" autoIncrement="false" description="订单编号"/>
+      <column name="order_type" primaryKey="false" required="false" type="CHAR" size="1" autoIncrement="false" description="类型(1:训练 2:考试)"/>
+      <column name="exam_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="考试计划id"/>
+      <column name="exam_name" primaryKey="false" required="false" type="VARCHAR" size="50" autoIncrement="false" description="考试名称"/>
+      <column name="exam_begin_date" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="考试开始时间"/>
+      <column name="exam_end_time" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="考试结束时间"/>
+      <column name="begin_time" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="开始时间"/>
+      <column name="end_time" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="结束时间"/>
+      <column name="gmt_create" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="创建时间"/>
+      <column name="creater" primaryKey="false" required="false" type="VARCHAR" size="50" default="-1" autoIncrement="false" description="创建人"/>
+      <unique name="unique_hash_value">
+        <unique-column name="hash_value"/>
+      </unique>
+    </table>
+    <table name="t_record_error">
+      <column name="id" primaryKey="true" required="true" type="INTEGER" size="10" autoIncrement="true" description="ID"/>
+      <column name="hash_value" primaryKey="false" required="true" type="VARCHAR" size="64" autoIncrement="false" description="考试记录唯一值"/>
+      <column name="error_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="扣分ID"/>
+      <column name="error_points" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="扣分分数"/>
+      <column name="error_name" primaryKey="false" required="false" type="VARCHAR" size="50" autoIncrement="false" description="扣分名称"/>
+      <column name="course_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="路线id"/>
+      <column name="course_name" primaryKey="false" required="false" type="VARCHAR" size="50" autoIncrement="false" description="路线名称"/>
+      <column name="sim_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="模拟器ID"/>
+      <column name="sim_name" primaryKey="false" required="false" type="VARCHAR" size="30" autoIncrement="false" description="模拟器名称"/>
+      <column name="driver_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="驾驶员ID"/>
+      <column name="mobile" primaryKey="false" required="false" type="CHAR" size="11" autoIncrement="false" description="手机号"/>
+      <column name="name" primaryKey="false" required="false" type="VARCHAR" size="20" autoIncrement="false" description="姓名"/>
+      <column name="exam_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="考试计划id"/>
+      <column name="exam_name" primaryKey="false" required="false" type="VARCHAR" size="50" autoIncrement="false" description="考试名称"/>
+      <column name="exam_begin_date" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="考试开始时间"/>
+      <column name="exam_end_time" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="考试结束时间"/>
+      <column name="org_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="部门ID"/>
+      <column name="org_name" primaryKey="false" required="false" type="VARCHAR" size="50" autoIncrement="false" description="部门名称"/>
+      <column name="org_abbr" primaryKey="false" required="false" type="VARCHAR" size="50" autoIncrement="false" description="部门简称"/>
+      <column name="order_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="订单ID"/>
+      <column name="order_no" primaryKey="false" required="false" type="VARCHAR" size="30" autoIncrement="false" description="订单编号"/>
+      <column name="order_type" primaryKey="false" required="false" type="CHAR" size="1" autoIncrement="false" description="类型(1:训练 2:考试)"/>
+      <column name="begin_time" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="开始时间"/>
+      <column name="end_time" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="结束时间"/>
+      <column name="gmt_create" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="创建时间"/>
+      <column name="creater" primaryKey="false" required="false" type="VARCHAR" size="50" default="-1" autoIncrement="false" description="创建人"/>
+      <index name="unique_hash_value">
+        <index-column name="hash_value"/>
+      </index>
+    </table>
+    <table name="t_record_photo">
+      <column name="id" primaryKey="true" required="true" type="INTEGER" size="10" autoIncrement="true" description="ID"/>
+      <column name="hash_value" primaryKey="false" required="true" type="VARCHAR" size="64" autoIncrement="false" description="考试记录唯一值"/>
+      <column name="driver_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="驾驶员ID"/>
+      <column name="begin_photo" primaryKey="false" required="false" type="LONGVARCHAR" size="16777215" autoIncrement="false" description="开始照片"/>
+      <column name="midway_photo" primaryKey="false" required="false" type="LONGVARCHAR" size="16777215" autoIncrement="false" description="中途练习照片"/>
+      <column name="gmt_create" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="创建时间"/>
+      <column name="creater" primaryKey="false" required="false" type="VARCHAR" size="50" default="-1" autoIncrement="false" description="创建人"/>
+      <unique name="unique_hash_value">
+        <unique-column name="hash_value"/>
+      </unique>
+    </table>
+    <table name="t_record_score">
+      <column name="id" primaryKey="true" required="true" type="INTEGER" size="10" autoIncrement="true" description="ID"/>
+      <column name="hash_value" primaryKey="false" required="true" type="VARCHAR" size="64" autoIncrement="false" description="考试记录唯一值"/>
+      <column name="pass" primaryKey="false" required="false" type="BIT" size="1" default="0" autoIncrement="false" description="1：通过 0：不通过"/>
+      <column name="score" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="考试得分"/>
+      <column name="course_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="路线id"/>
+      <column name="course_name" primaryKey="false" required="false" type="VARCHAR" size="50" autoIncrement="false" description="路线名称"/>
+      <column name="sun_points" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="路线总分"/>
+      <column name="pass_points" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="单条路线通过分数"/>
+      <column name="sim_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="模拟器ID"/>
+      <column name="sim_name" primaryKey="false" required="false" type="VARCHAR" size="30" autoIncrement="false" description="模拟器名称"/>
+      <column name="driver_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="驾驶员ID"/>
+      <column name="mobile" primaryKey="false" required="false" type="CHAR" size="11" autoIncrement="false" description="手机号"/>
+      <column name="name" primaryKey="false" required="false" type="VARCHAR" size="20" autoIncrement="false" description="姓名"/>
+      <column name="exam_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="考试计划id"/>
+      <column name="exam_name" primaryKey="false" required="false" type="VARCHAR" size="50" autoIncrement="false" description="考试名称"/>
+      <column name="exam_begin_date" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="考试开始时间"/>
+      <column name="exam_end_time" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="考试结束时间"/>
+      <column name="org_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="部门ID"/>
+      <column name="org_name" primaryKey="false" required="false" type="VARCHAR" size="50" autoIncrement="false" description="部门名称"/>
+      <column name="org_abbr" primaryKey="false" required="false" type="VARCHAR" size="50" autoIncrement="false" description="部门简称"/>
+      <column name="order_id" primaryKey="false" required="false" type="INTEGER" size="10" autoIncrement="false" description="订单ID"/>
+      <column name="order_no" primaryKey="false" required="false" type="VARCHAR" size="30" autoIncrement="false" description="订单编号"/>
+      <column name="order_type" primaryKey="false" required="false" type="CHAR" size="1" autoIncrement="false" description="类型(1:训练 2:考试)"/>
+      <column name="begin_time" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="开始时间"/>
+      <column name="end_time" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="结束时间"/>
+      <column name="gmt_create" primaryKey="false" required="false" type="TIMESTAMP" size="19" default="current_timestamp()" autoIncrement="false" description="创建时间"/>
+      <column name="creater" primaryKey="false" required="false" type="VARCHAR" size="50" default="-1" autoIncrement="false" description="创建人"/>
+      <index name="unique_hash_value">
+        <index-column name="hash_value"/>
+      </index>
+    </table>
+  </database>

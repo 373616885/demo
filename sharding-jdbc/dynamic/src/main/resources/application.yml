@@ -1,0 +1,61 @@
+server:
+  port: 8080
+
+logging:
+  config: classpath:log4j2.xml
+
+spring:
+  resources:
+    add-mappings: false
+  mvc:
+    throw-exception-if-no-handler-found: true
+  datasource:
+    master:
+      #driver-class-name: com.mysql.cj.jdbc.Driver
+      #jdbc-url: jdbc:mysql://47.100.185.77:7100/gz_airport?useUnicode=true&autoReconnect=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false&allowMultiQueries=true&serverTimezone=GMT%2B8
+      driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+      jdbc-url: jdbc:p6spy:mysql://47.100.185.77:7100/gz_airport?useUnicode=true&characterEncoding=utf8&tinyInt1isBit=false&useSSL=false&serverTimezone=GMT
+      username: root
+      password: 373616885
+      auto-commit: true
+      #一个连接的生命时长（毫秒），超时而且没被使用则被释放（retired）
+      max-lifetime: 25200000
+      connection-test-query: select 1 from dual
+    slave-7200:
+      #driver-class-name: com.mysql.cj.jdbc.Driver
+      #jdbc-url: jdbc:mysql://47.100.185.77:7200/gz_airport?useUnicode=true&autoReconnect=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false&allowMultiQueries=true&serverTimezone=GMT%2B8
+      driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+      jdbc-url: jdbc:p6spy:mysql://47.100.185.77:7200/gz_airport?useUnicode=true&characterEncoding=utf8&tinyInt1isBit=false&useSSL=false&serverTimezone=GMT
+      username: slave
+      password: 373616885
+      max-lifetime: 25200000
+      connection-test-query: select 1 from dual
+      read-only: true
+    slave-7300:
+      #driver-class-name: com.mysql.cj.jdbc.Driver
+      #jdbc-url: jdbc:mysql://47.100.185.77:7300/gz_airport?useUnicode=true&autoReconnect=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false&allowMultiQueries=true&serverTimezone=GMT%2B8
+      driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+      jdbc-url: jdbc:p6spy:mysql://47.100.185.77:7300/gz_airport?useUnicode=true&characterEncoding=utf8&tinyInt1isBit=false&useSSL=false&serverTimezone=GMT
+      username: slave
+      password: 373616885
+      max-lifetime: 25200000
+      connection-test-query: select 1 from dual
+      read-only: true
+
+
+
+
+mybatis-plus:
+  #配置包别名
+  type-aliases-package: com.qin.dynamic.**.dao
+  #枚举属性配置扫描
+  type-enums-package: com.qin.dynamic.**.enums
+  #*Mapper.xml文件扫描
+  mapper-locations: classpath*:com/qin/dynamic/**/mapper/*Mapper.xml
+  configuration:
+    #mybatis返回map类型数据空值字段显示
+    call-setters-on-nulls: true
+  global-config:
+    db-config:
+      #主键类型
+      id-type: AUTO

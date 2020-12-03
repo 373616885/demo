@@ -9,6 +9,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class DockerApplication {
 
     public static void main(String[] args) {
+		
+		
+		/**
+		 * dockerfile-maven-plugin遇到巨坑，1.4.10版本windows10不能在pom.xml中使用
+		 * 必须把Dockerfile放到项目根目录下
+		 */
         SpringApplication.run(DockerApplication.class, args);
         log.warn("启动成功");
     }

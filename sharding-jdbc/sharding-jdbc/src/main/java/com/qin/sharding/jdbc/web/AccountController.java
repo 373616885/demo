@@ -1,29 +1,18 @@
-package com.qin.sharding.jdbc.web;
+package com.qin.sharding.jdbc;
 
-import com.qin.sharding.jdbc.dao.AccountMapper;
-import com.qin.sharding.jdbc.entity.Account;
-import com.qin.sharding.jdbc.vo.MenuVo;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.apache.shardingsphere.api.hint.HintManager;
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.util.List;
+@SpringBootApplication
+@MapperScan("com.qin.sharding.jdbc.**.dao")
+public class ShardingJdbcApplication {
 
-/**
- * @author qinjp
- * @date 2020/12/3
- */
-@Slf4j
-@RestController
-@AllArgsConstructor
-public class AccountController {
-
-    private final AccountMapper accountMapper;
-
-    @GetMapping(value = "account")
-    public List<Account> account() {
-        return accountMapper.selectList(null);
+    public static void main(String[] args) {
+		// 强制走主库
+        HintManager.getInstance().setMasterRouteOnly();
+        SpringApplication.run(ShardingJdbcApplication.class, args);
     }
 
 }

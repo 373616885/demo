@@ -5,12 +5,13 @@ logging:
   config: classpath:log4j2.xml
 
 spring:
-  resources:
-    add-mappings: false
+  web:
+    resources:
+      add-mappings: false
   mvc:
     throw-exception-if-no-handler-found: true
   datasource:
-    master:
+    master7100:
       #driver-class-name: com.mysql.cj.jdbc.Driver
       #jdbc-url: jdbc:mysql://47.100.185.77:7100/gz_airport?useUnicode=true&autoReconnect=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false&allowMultiQueries=true&serverTimezone=GMT%2B8
       driver-class-name: com.p6spy.engine.spy.P6SpyDriver
@@ -21,7 +22,7 @@ spring:
       #一个连接的生命时长（毫秒），超时而且没被使用则被释放（retired）
       max-lifetime: 25200000
       connection-test-query: select 1 from dual
-    slave-7200:
+    slave7200:
       #driver-class-name: com.mysql.cj.jdbc.Driver
       #jdbc-url: jdbc:mysql://47.100.185.77:7200/gz_airport?useUnicode=true&autoReconnect=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false&allowMultiQueries=true&serverTimezone=GMT%2B8
       driver-class-name: com.p6spy.engine.spy.P6SpyDriver
@@ -31,7 +32,7 @@ spring:
       max-lifetime: 25200000
       connection-test-query: select 1 from dual
       read-only: true
-    slave-7300:
+    slave7300:
       #driver-class-name: com.mysql.cj.jdbc.Driver
       #jdbc-url: jdbc:mysql://47.100.185.77:7300/gz_airport?useUnicode=true&autoReconnect=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false&allowMultiQueries=true&serverTimezone=GMT%2B8
       driver-class-name: com.p6spy.engine.spy.P6SpyDriver
@@ -41,6 +42,7 @@ spring:
       max-lifetime: 25200000
       connection-test-query: select 1 from dual
       read-only: true
+
 
 
 

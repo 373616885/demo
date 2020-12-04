@@ -148,3 +148,12 @@ public class SharddingJdbcLocalDateTypeHandler extends BaseTypeHandler<LocalDate
 
 ```
 
+
+
+# sharding-jdbc什么情况select会走主库
+
+- select前增加`HintManager.getInstance().setMasterRouteOnly();`类似于pagehelper只对下一条查询语句生效。
+- 存在事务的情况下，事务内的更新语句之后的select会走master，记住只有之后的，之前的select还是会走从库。
+
+
+

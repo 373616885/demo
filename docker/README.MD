@@ -61,7 +61,6 @@
 - 服务器上Docker安装成功
 - Docker开启远程访问
 - 客户机配置好DOCKER_HOST环境变量
-  上面三个步骤前文已介绍过。
 
 
 
@@ -77,6 +76,24 @@ ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
 systemctl daemon-reload
 # 2，重启docker 
 systemctl restart docker
+
+```
+
+#### Docker开启远程访问
+
+```shell
+# 测试2375端口是否开启成功
+telnet 192.168.11.88 2375
+```
+
+#### 客户机配置好DOCKER_HOST环境变量
+
+电脑配置环境变量
+
+```shell
+DOCKER_HOST  tcp://192.168.11.88:2375
+
+echo %DOCKER_HOST%
 ```
 
 
@@ -123,7 +140,27 @@ ENTRYPOINT ["java","-jar","/home/apply/docker/docker.jar"]
 
 IDEA 菜单栏里找到 View -> Tool windows -> Services  打开 Services 面板
 
-![]()
+然后点击 Add service > Docker Connection 来添加一个 Docker 连接
+
+填上
+
+name: docker
+
+TCP socket -> Engine API URL : tcp://47.100.185.77:2375
+
+在 images 里创建容器
+
+填上
+
+Container name : docker
+
+Run options: -p 8080:80
+
+
+
+编译项目并构建docker镜像，编译结束自动推送镜像到docker主机中
+
+`mvn clean package -Dmaven.test.skip=true dockerfile:build -Ddockerfile.tag=0.0.1`
 
 
 

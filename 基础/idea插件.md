@@ -26,3 +26,4 @@
 
 ## FindBugs
 
+# idea2020.2.2.x搜索：IDE Eval Reset插件进行安装

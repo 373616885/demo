@@ -118,6 +118,9 @@ ARG JAR_FILE
 # 将target目录下的JAR_FILE 添加 容器中的docker.jar
 ADD target/${JAR_FILE} /home/apply/docker/docker.jar
 
+# 存在就修改创建时间
+RUN touch /home/apply/docker/docker.jar
+
 # 用于指定持久化目录（容器内）--这个目录持久化--不会重启就没了 -- docker inspect 容积 查看具体的挂载目录
 VOLUME ["/home/apply/docker/logs"]
 
@@ -166,16 +169,113 @@ Run options: -p 8080:80
 
 
 
+#### Docker设置TLS 保证端口2375的安全连接
+
+`sh create_tls_certs.sh`
+
+```powershell
+#创建 Docker TLS 证书
+#!/bin/bash
+
+#相关配置信息 -- SERVER 外网ip 必须设置不然
+#idea 会出现 docker chanel disconnected before any data was received
+SERVER="47.100.185.77"
+PASSWORD="373616885"
+COUNTRY="CN"
+STATE="广东省"
+CITY="深圳市"
+ORGANIZATION="公司名称"
+ORGANIZATIONAL_UNIT="公司单位"
+EMAIL="373616885@qq.com"
+
+###开始生成文件###
+echo "开始生成文件"
+
+#切换到生产密钥的目录
+cd /usr/local/docker/ssl
+#生成ca私钥(使用aes256加密)
+openssl genrsa -aes256 -passout pass:$PASSWORD  -out ca-key.pem 2048
+#生成ca证书，填写配置信息
+openssl req -new -x509 -passin "pass:$PASSWORD" -days 3650 -key ca-key.pem -sha256 -out ca.pem -subj "/C=$COUNTRY/ST=$STATE/L=$CITY/O=$ORGANIZATION/OU=$ORGANIZATIONAL_UNIT/CN=$SERVER/emailAddress=$EMAIL"
+
+#生成server证书私钥文件
+openssl genrsa -out server-key.pem 2048
+#生成server证书请求文件
+openssl req -subj "/CN=$SERVER" -new -key server-key.pem -out server.csr
+# 0.0.0.0可以匹配任意，但是仍然需要配置你的服务器外网ip
+# 省略会造成错误 docker chanel disconnected before any data was received
+sh -c  'echo "subjectAltName = IP:'$SERVER',IP:0.0.0.0" >> extfile-server.cnf'
+sh -c  'echo "extendedKeyUsage = serverAuth" >> extfile-server.cnf'
+#使用CA证书及CA密钥以及上面的server证书请求文件进行签发，生成server自签证书
+openssl x509 -req -days 3650 -in server.csr -CA ca.pem -CAkey ca-key.pem -passin "pass:$PASSWORD" -CAcreateserial  -out server-cert.pem -extfile extfile-server.cnf
+
+#生成client证书RSA私钥文件
+openssl genrsa -out key.pem 2048
+#生成client证书请求文件
+openssl req -subj '/CN=client' -new -key key.pem -out client.csr
+
+sh -c 'echo "extendedKeyUsage=clientAuth" > extfile-client.cnf'
+#生成client自签证书（根据上面的client私钥文件、client证书请求文件生成）
+openssl x509 -req -days 3650 -in client.csr -CA ca.pem -CAkey ca-key.pem  -passin "pass:$PASSWORD" -CAcreateserial -out cert.pem  -extfile extfile-client.cnf
+
+#更改密钥权限
+chmod 0400 ca-key.pem key.pem server-key.pem
+#更改密钥权限
+chmod 0444 ca.pem server-cert.pem cert.pem
+#删除无用文件
+rm client.csr server.csr
+
+echo "生成文件完成"
+###生成结束###
+
+
+```
 
 
 
+`vim /usr/lib/systemd/system/docker.service`
+
+```shell
+# ExecStart 加上 --tlscacert=/usr/local/docker/ssl/ca.pem --tlscert=/usr/local/docker/ssl/server-cert.pem --tlskey=/usr/local/docker/ssl/server-key.pem
+
+# 示例
+ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock -H tcp://0.0.0.0:2375 --tlsverify --tlscacert=/usr/local/docker/ssl/ca.pem --tlscert=/usr/local/docker/ssl/server-cert.pem --tlskey=/usr/local/docker/ssl/server-key.pem
+
+# 重启
+systemctl daemon-reload
+systemctl restart docker
+
+# 检查--出现错误就证明成功
+docker -H tcp://47.100.185.77:2375 ps -a
+```
 
 
 
+windows下配置环境变量：
+
+```shell
+DOCKER_HOST=tcp://47.100.185.77:2376
+DOCKER_CERT_PATH=E:\docker\ssl
+DOCKER_TLS_VERIFY=1
+
+证书路径目录下面有三个证书文件 ca.pem、cert.pem、key.pem
+```
 
 
 
+`mvn clean package -Dmaven.test.skip=true`
 
+
+
+idea 
+
+```shell
+Engine API URL : tcp://47.100.185.77:2375
+改成：
+Engine API URL : https://47.100.185.77:2375
+Certificates folder : E:\docker\ssl
+
+```
 
 
 

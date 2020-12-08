@@ -3,7 +3,7 @@ FROM openjdk:8-alpine
 #FROM java:8
 
 # 维护者信息
-MAINTAINER qinjp <373616885@qq.com>
+MAINTAINER qinjp 373616885@qq.com
 
 #RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 # 构建镜像时执行的命令
@@ -14,6 +14,9 @@ ARG JAR_FILE
 
 # 将target目录下的JAR_FILE 添加 容器中的docker.jar
 ADD target/${JAR_FILE} /home/apply/docker/docker.jar
+
+# 存在就修改创建时间
+RUN touch /home/apply/docker/docker.jar
 
 # 用于指定持久化目录（容器内）--这个目录持久化--不会重启就没了 -- docker inspect 容积 查看具体的挂载目录
 VOLUME ["/home/apply/docker/logs"]

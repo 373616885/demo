@@ -3,13 +3,13 @@
 nacos:
   config:
     server-addr: 47.100.185.77:8848
+    username: nacos
+    password: nacos
     context-path: nacos
     namespace: dev
     data-id: nacos
     group: qin
     auto-refresh: true
-    username: nacos
-    password: nacos
     remote-first: true
     # \u5355\u72EC\u5728nacos\u4E2D\u6307\u5B9A\u7C7B\u578B
     # \u8FD8\u9700\u8981\u914D\u7F6E\u7684\u662Fnacos.config bootstrap.enable=true\u6216nacos.config bootstrap.log.enable=true
@@ -18,6 +18,18 @@ nacos:
     bootstrap:
       enable: true
       log-enable: true
+  discovery:
+    server-addr: 47.100.185.77:8848
+    username: nacos
+    password: nacos
+    #context-path: nacos
+    namespace: dev
+    auto-register: true
+    register:
+      enabled: true
+      group-name: qin
+      service-name: nacos
+
 
 
 logging:

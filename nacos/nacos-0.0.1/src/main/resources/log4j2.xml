@@ -118,7 +118,7 @@ monitorInterval : 用于指定log4j自动重新配置的监测间隔时间，单
         <!--             <appender-ref ref="RollingFileError"/> -->
         <!--         </root> -->
 
-        <asyncRoot level="info">
+        <asyncRoot level="all">
             <appender-ref ref="Console"/>
             <!--            <appender-ref ref="File"/> -->
             <!--            <appender-ref ref="RollingFileInfo"/>-->

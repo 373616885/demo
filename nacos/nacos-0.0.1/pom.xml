@@ -15,7 +15,7 @@
     <version>0.0.1</version>
 
     <name>nacos</name>
-    <description>nacos demo</description>
+    <description>nacos spring boot demo</description>
 
     <properties>
         <java.version>1.8</java.version>
@@ -80,10 +80,9 @@
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>3.4.0</version>
+            <version>3.4.1</version>
         </dependency>
         <!-- mybatis-plus end-->
-
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -6,8 +6,8 @@ nacos:
     password: nacos
     context-path: nacos
     namespace: dev
-    data-id: nacos
-    group: qin
+    data-id: dev_data
+    group: dev_group
     auto-refresh: true
     remote-first: true
     # 单独在nacos中指定类型
@@ -26,11 +26,6 @@ nacos:
     auto-register: true
     register:
       enabled: true
-      group-name: qin
-      service-name: nacos
+      group-name: dev_group
+      service-name: dev_service
 
-
-
-logging:
-  level:
-    root: info

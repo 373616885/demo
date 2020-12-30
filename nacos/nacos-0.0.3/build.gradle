@@ -1,0 +1,63 @@
+plugins {
+    id 'org.springframework.boot' version '2.3.7.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+    id 'java'
+}
+
+group = 'com.qin'
+version = '0.0.3'
+// java 版本
+sourceCompatibility = '11'
+
+ext {
+    set('springCloudAlibabaVersion', "2.2.2.RELEASE")
+}
+
+configurations {
+    compileOnly {  extendsFrom annotationProcessor}
+    all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+}
+
+repositories {
+    mavenLocal()
+    maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+    maven { url "http://repo1.maven.org/maven2" }
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+
+    implementation ('org.springframework.boot:spring-boot-starter-webflux') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+    implementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery'
+    implementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config'
+
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    implementation 'com.lmax:disruptor:3.4.2'
+
+    implementation 'mysql:mysql-connector-java'
+
+    implementation 'p6spy:p6spy:3.9.1'
+
+    implementation 'com.baomidou:mybatis-plus-boot-starter:3.4.1'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "com.alibaba.cloud:spring-cloud-alibaba-dependencies:${springCloudAlibabaVersion}"
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

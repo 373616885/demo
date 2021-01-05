@@ -29,3 +29,10 @@
 ## idea2020.2.2.x搜索：IDE Eval Reset插件进行安装
 
 ## Kite AI  
+
+
+
+## 代码学习 https://www.codota.com/code 
+
+## 命名 https://unbug.github.io/codelf/
+

@@ -1,0 +1,91 @@
+plugins {
+    id 'org.springframework.boot' version '2.4.1' apply false
+    id 'io.spring.dependency-management' version '1.0.10.RELEASE' apply false
+    id 'java'
+}
+
+group = 'com.qin'
+version = '0.0.1'
+
+sourceCompatibility = '11'
+targetCompatibility = '11'
+
+// 这个仓库和子类必须一致
+allprojects {
+    // 这个仓库和子类的仓库必须一致
+    repositories {
+        mavenLocal()
+        //maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        //maven { url 'http://repo1.maven.org/maven2' }
+        maven { url 'https://repo.spring.io/milestone' }
+        mavenCentral()
+        jcenter()
+    }
+}
+
+ext { // 自定义扩展 字段 这里定义版本信息
+    guavaVersion = '29.0-jre'
+    hutoolAllVersion = '5.4.2'
+    p6spyVersion = '3.9.1'
+    disruptorVersion = '3.4.2'
+    set('springCloudVersion', "2020.0.0")
+}
+
+
+
+subprojects {
+    // 需要的插件
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    // java编译的时候缺省状态下会因为中文字符而失败，所以这儿需要改为utf8
+    [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+    // 指定编码格式
+    tasks.withType(JavaCompile) {
+        options.encoding = "UTF-8"
+    }
+
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
+        }
+    }
+
+    dependencies {
+
+        implementation "com.google.guava:guava:${guavaVersion}"
+        implementation "cn.hutool:hutool-all:${hutoolAllVersion}"
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+        annotationProcessor 'org.projectlombok:lombok'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'io.projectreactor:reactor-test'
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+        }
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            force "p6spy:p6spy:${p6spyVersion}"
+            force "com.lmax:disruptor:${disruptorVersion}"
+        }
+    }
+
+}
+
+// 禁止根项目一切行为（不影响模块）
+tasks.forEach {
+    it.enabled = false
+}

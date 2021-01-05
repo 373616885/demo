@@ -1,0 +1,4 @@
+/* 父模块名称 */
+rootProject.name = 'base'
+/* 引入子模块 */
+include 'gateway'

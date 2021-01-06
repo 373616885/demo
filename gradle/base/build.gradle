@@ -4,14 +4,15 @@ plugins {
     id 'java'
 }
 
-group = 'com.qin'
-version = '0.0.1'
-
-sourceCompatibility = '11'
-targetCompatibility = '11'
-
 // 这个仓库和子类必须一致
 allprojects {
+
+    group = 'com.qin'
+    version = '0.0.1'
+
+    java.sourceCompatibility = JavaVersion.VERSION_11
+    java.targetCompatibility = JavaVersion.VERSION_11
+
     // 这个仓库和子类的仓库必须一致
     repositories {
         mavenLocal()
@@ -26,14 +27,13 @@ allprojects {
 }
 
 ext { // 自定义扩展 字段 这里定义版本信息
-    guavaVersion = '29.0-jre'
+    guavaVersion = '30.1-jre'
     hutoolAllVersion = '5.4.2'
     p6spyVersion = '3.9.1'
     disruptorVersion = '3.4.2'
+    commonsLang3Version = '3.10'
     set('springCloudVersion', "2020.0.0")
 }
-
-
 
 subprojects {
     // 需要的插件
@@ -59,6 +59,8 @@ subprojects {
 
         implementation "com.google.guava:guava:${guavaVersion}"
         implementation "cn.hutool:hutool-all:${hutoolAllVersion}"
+        implementation "org.apache.commons:commons-lang3:${commonsLang3Version}"
+
         compileOnly 'org.projectlombok:lombok'
         annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
         annotationProcessor 'org.projectlombok:lombok'

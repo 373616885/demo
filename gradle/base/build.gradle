@@ -4,6 +4,8 @@ plugins {
     id 'java'
 }
 
+description = '父类'
+
 // 这个仓库和子类必须一致
 allprojects {
 

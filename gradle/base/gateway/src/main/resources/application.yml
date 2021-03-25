@@ -1,0 +1,22 @@
+server:
+  port: 9999
+
+logging:
+  config: classpath:log4j2.xml
+
+spring:
+  application:
+    name: gateWay
+  cloud:
+    gateway:
+      routes:
+        - id: config
+          uri: http://10.11.51.23:8881/
+          predicates:
+            - Path=/config/**
+          filters:
+            - Time=true
+      default-filters:
+        - AddRequestHeader=author, qinjp
+
+

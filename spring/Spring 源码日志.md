@@ -90,6 +90,22 @@ Arrays.asList(appFiles).forEach(System.out::println);
 
 ​	这其实打破了类的委托机制，这种机制普遍存在于好多第三方的工具中，如tomcat、spring中
 
+ **总结：就是加载的时候**
+
+​	0.解決問題：在java.sql.DriverManager类(在rt.jar里面)里需要加载具体实现类
+
+​	1.使用Thread.currentThread().getContextClassLoader() 当前线程的AppClassLoader去加载
+
+​    2.或者使用SPI ServiceLoader 去加载 
+
+**SPI:**
+
+指定的目录META-INF/services/下加载配置文件
+
+文件名为要加载的服务类的全限定类名
+
+文件的内容为：服务类对应的实现类全限定名
+
 **DriverManager类的getConnection方法**：
 
 ![](img/20170922183420138.png)

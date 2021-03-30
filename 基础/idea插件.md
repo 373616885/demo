@@ -26,11 +26,9 @@
 
 ## FindBugs
 
-<<<<<<< HEAD
 # idea2020.2.2.x搜索：IDE Eval Reset插件进行安装
 
 ### PMD 是一个开源静态源代码分析器
-=======
 ## idea2020.2.2.x搜索：IDE Eval Reset插件进行安装
 
 ## Kite AI  代码提示

@@ -44,10 +44,10 @@ JRE是可以在其上运行、测试和传输应用程序的Java平台。它包�
 
  **jvm 的主要组成部分** 
 
-- 类加载器（ClassLoader）
+- 类加载器（ClassLoader）--把字节码加载到内存中
 - 运行时数据区（Runtime Data Area）
-- 执行引擎（Execution Engine）
-- 本地库接口（Native Interface）
+- 执行引擎（Execution Engine）--字节码文件(class)不能直接交个底层操作系统去执行--将字节码翻译成底层系统指令（01）
+- 本地库接口（Native Interface）--调用其他语言的本地库接口（Native Interface）来实现整个程序的功能
 
 ![](img\20200616210328.jpg)
 

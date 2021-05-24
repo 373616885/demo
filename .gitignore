@@ -1,0 +1,23 @@
+/rabbit/.idea
+/rabbit/*.iml
+/rabbit/rabbit-boot/*.iml
+/rabbit/rabbit-boot/target
+/observer/.idea
+/observer/*.iml
+/observer/target
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+/out/
+
+*/target/
+*/*/target/
+*.bak
+*.log
+/spring-boot/redis/gradle
+/基础/project
+/tail/logs
+/disruptor/logs

@@ -1,0 +1,19 @@
+apply plugin: HelloPlugin
+
+greeting.message = 'Hi,this from configure Gradle message.'
+
+class HelloPlugin implements Plugin<Project> {
+   void apply(Project project) {
+      // Add the 'greeting' extension object
+      project.extensions.create("greeting", HelloPluginExtension)
+
+      // Add a task that uses the configuration
+      project.task('hello') << {
+         println project.greeting.message
+      }
+   }
+}
+
+class HelloPluginExtension {
+   def String message = 'Hello,this from HelloPluginExtension message.'
+}

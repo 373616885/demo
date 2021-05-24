@@ -1,0 +1,65 @@
+plugins {
+    id 'org.springframework.boot' version '2.1.7.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id 'java'
+}
+
+group = 'com.qin'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    implementation {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
+}
+
+
+ext {
+    // 运行和打包的环境选择, 默认是开发环境
+    // 获取 gradle 参数中 -Dprofile 的值: gradle -Denv=production clean build
+    environment = System.getProperty("env", "dev")
+}
+
+def loadConfiguration() {
+    println "==> Load configuration for '" + environment + "'"
+    def configFile = file('config.groovy') // 配置文件
+    return new ConfigSlurper(environment).parse(configFile.toURI().toURL()).toProperties()
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDir "config/${environment}"
+        }
+    }
+}
+
+processResources {
+    // src/main/resources 下的文件中 @key@ 的内容使用 config.groovy 里对应的进行替换
+    from(sourceSets.main.resources.srcDirs) {
+        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: loadConfiguration())
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    implementation 'org.springframework.boot:spring-boot-starter-undertow'
+
+    implementation 'com.lmax:disruptor:3.4.2'
+
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}

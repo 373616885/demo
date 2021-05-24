@@ -1,0 +1,22 @@
+/* 子模块项目名，jar名 */
+archivesBaseName = 'gateway'
+
+description = '网关'
+
+//jar.enabled = true
+/* 需要org.springframework.boot插件 不需要打包成可执行的jar*/
+//bootJar.enabled = true
+
+configurations {
+    all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+}
+
+dependencies {
+    implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
+
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    implementation 'com.lmax:disruptor'
+
+}
+
+

@@ -1,0 +1,39 @@
+// doLast 语句指定快捷方式（表示符号 <<）来简化此 hello 任务
+task helloworld {
+   doLast {
+      println 'hello world'
+   }
+}
+
+//task hello << {
+//    println 'Hello world!'
+//}
+//task intro(dependsOn: hello) << {
+//    println "I'm Gradle"
+//}
+
+//task taskX << {
+//   println 'taskX'
+//}
+//task taskY(dependsOn: 'taskX') << {
+//   println "taskY"
+//}
+
+
+task taskY << {
+   println 'taskY'
+}
+task taskX << {
+   println 'taskX'
+}
+taskY.dependsOn taskX
+
+task hello
+
+println hello.name
+println project.hello.name
+
+println tasks.hello.name
+println tasks['hello'].name
+
+//任务名称作为属性名称

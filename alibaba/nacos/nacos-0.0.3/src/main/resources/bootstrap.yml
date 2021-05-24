@@ -1,0 +1,41 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: nacos-0.0.3
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      config:
+        # dataId 默认 ${prefix}-${spring.profiles.active}.${file-extension}
+        enabled: true
+        refresh-enabled: true
+        encode: UTF-8
+        timeout: 3000
+        file-extension: yaml
+        namespace: dev
+        # name = dataId
+        # name: dev_data
+        group: group
+        server-addr: 47.100.185.77:8888
+        username: nacos
+        password: nacos
+      discovery:
+        enabled: true
+        server-addr: 47.100.185.77:8888
+        namespace: dev
+        group: group
+        service: dev_service
+        metadata:
+          author: qinjp
+          date: 2020/12/30
+        username: nacos
+        password: nacos
+        register-enabled: true
+
+
+
+
+

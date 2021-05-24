@@ -1,0 +1,49 @@
+apply plugin: 'java'
+
+version = '0.1.1'
+sourceCompatibility = '1.8'
+
+repositories {
+   //jcenter仓库 https://jcenter.bintray.com 
+   //jcenter()
+   //maven中央仓库 http://repo1.maven.org/maven2/
+   mavenCentral()
+}
+
+dependencies {
+   compile 'org.slf4j:slf4j-api:1.7.12'
+   testCompile 'junit:junit:4.12'
+}
+
+jar {
+    baseName = 'test-gradle'
+    version = '1.0.0'
+}
+
+test.enabled = false
+
+sourceSets {
+   main {
+      java {
+         srcDir 'src/main/java'
+      }
+      resources {
+	 srcDir 'src/main/resources'
+      }
+   }
+
+   test {
+      java {
+         srcDir 'src/test/java'
+      }
+      resources {
+	 srcDir 'src/test/resources'
+      }
+   }
+}
+
+jar {
+   manifest {
+      attributes 'Main-Class': 'com.example.demo.DemoApplication'
+   }
+}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qin.mp.mapper.UserMapper">
+
+    <select id="selectAllXml" resultType="com.qin.mp.domain.User" >
+        select user_id,name from t_user ${ew.customSqlSegment}
+    </select>
+
+    <select id="selectPageVo" resultType="com.qin.mp.domain.User">
+        select user_id,name from t_user where password = #{password}
+    </select>
+    <select id="selectMyPage" resultType="com.qin.mp.domain.User">
+        select * from t_user ${ew.customSqlSegment}
+    </select>
+
+</mapper>

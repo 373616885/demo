@@ -1,0 +1,4 @@
+## 本地构建
+mvn clean compile jib:dockerBuild -U
+
+docker run --name docker-qin-0.0.2 -it -d -p 8080:8080 373616885/docker-qin:0.0.2

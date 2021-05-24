@@ -1,0 +1,31 @@
+#server.port=9431
+nacos:
+  config:
+    server-addr: 47.100.185.77:8848
+    username: nacos
+    password: nacos
+    context-path: nacos
+    namespace: dev
+    data-id: dev_data
+    group: dev_group
+    auto-refresh: true
+    remote-first: true
+    # 单独在nacos中指定类型
+    # 还需要配置的是nacos.config bootstrap.enable=true或nacos.config bootstrap.log.enable=true
+    # 配合使用
+    type: yaml
+    bootstrap:
+      enable: true
+      log-enable: true
+  discovery:
+    server-addr: 47.100.185.77:8848
+    username: nacos
+    password: nacos
+    #context-path: nacos
+    namespace: dev
+    auto-register: true
+    register:
+      enabled: true
+      group-name: dev_group
+      service-name: dev_service
+

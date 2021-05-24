@@ -1,0 +1,52 @@
+server:
+  port: 9008
+  servlet:
+    context-path: /wma
+
+logging:
+  config: classpath:log4j2.xml
+
+sms:
+  captcha:
+    #短信验证码有效时间，单位秒
+    timeout: 600
+    #短信验证码位数
+    length: 4
+    #限制每小时发送次数
+    limitCountHour: 5
+    #限制手机每天次数
+    limitCountDay: 20
+
+
+spring:
+  resources:
+    add-mappings: false
+  mvc:
+    throw-exception-if-no-handler-found: true
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.9.250:3306/zzsim-airport?useUnicode=true&autoReconnect=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false&&allowMultiQueries=true&serverTimezone=GMT%2B8
+    username: root
+    password: 373616885
+    hikari:
+      auto-commit: true
+      minimum-idle: 1
+      maximum-pool-size: 10
+      #一个连接的生命时长（毫秒），超时而且没被使用则被释放（retired）
+      max-lifetime: 25200000
+      connection-test-query: select 1 from dual
+  redis:
+    database: 0
+    host: 47.100.185.77
+    port: 6379
+    password: 373616885
+    timeout: 5000
+    lettuce:
+      pool.max-active: 8
+      pool.max-wait: -1
+      pool.max-idle: 8
+      pool.min-idle: 2
+  cache:
+    type: caffeine
+    caffeine:
+      spec: initialCapacity=100,maximumSize=500,expireAfterWrite=900s

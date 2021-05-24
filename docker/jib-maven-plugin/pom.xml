@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.4.5</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <groupId>com.qin</groupId>
+    <artifactId>docker</artifactId>
+    <version>0.0.2</version>
+
+    <name>docker</name>
+    <description>Demo project for Spring Boot</description>
+
+    <properties>
+        <java.version>11</java.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <!-- 开发环境，默认激活 -->
+        <profile>
+            <id>dev</id>
+            <properties>
+                <profileActive>dev</profileActive>
+                <dockerfile.skip>false</dockerfile.skip>
+                <jib.skip>true</jib.skip>
+            </properties>
+            <!--默认启用的环境配置 -->
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <!-- 测试环境 -->
+        <profile>
+            <id>uat</id>
+            <properties>
+                <profileActive>uat</profileActive>
+                <dockerfile.skip>false</dockerfile.skip>
+                <jib.skip>false</jib.skip>
+            </properties>
+        </profile>
+    </profiles>
+
+    <build>
+        <finalName>docker</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <skip>${jib.skip}</skip>
+                    <!--基础镜像，来自dockerhub,如果是私服，需要加上鉴权信息，和to下的auth节点相同-->
+                    <from>
+                        <image>openjdk:11</image>
+                    </from>
+                    <!--构建后的镜像名称以及私服地址、鉴权信息-->
+                    <to>
+                        <image>docker.io/373616885/docker-qin:${project.version}</image>
+                        <!--私有仓库的账号密码-->
+                        <auth>
+                            <username>123456789</username>
+                            <password>123456789</password>
+                        </auth>
+                    </to>
+                    <!--允许非https-->
+                    <allowInsecureRegistries>true</allowInsecureRegistries>
+                    <container>
+                        <!--jvm内存参数,jvm启动时的所有参数都可以在这里增加-->
+                        <jvmFlags>
+                            <jvmFlag>-Xms512m</jvmFlag>
+                            <jvmFlag>-Xmx512m</jvmFlag>
+                            <jvmFlag>-Duser.timezone=GMT+08</jvmFlag>
+                            <jvmFlag>-Dfile.encoding=UTF8</jvmFlag>
+                        </jvmFlags>
+                        <!--要暴露的端口-->
+                        <ports>
+                            <port>8080</port>
+                        </ports>
+                        <mainClass>com.qin.docker.DockerApplication</mainClass>
+                        <!--使用该参数将镜像的创建时间与系统时间对其-->
+                        <!--<useCurrentTimestamp>true</useCurrentTimestamp>-->
+                        <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+                        <!-- 设置时区  -->
+                        <environment>
+                            <TZ>Asia/Shanghai</TZ>
+                        </environment>
+                    </container>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>build-and-push-docker-image</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -1,0 +1,76 @@
+logging:
+  config: classpath:logback-spring.xml
+
+#spring:
+#  datasource:
+#    #driver-class-name: com.mysql.cj.jdbc.Driver
+#    #url: jdbc:mysql://8.129.179.184:3306/gz-airport?useUnicode=true&autoReconnect=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false&&allowMultiQueries=true&serverTimezone=GMT%2B8
+#    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+#    url: jdbc:p6spy:mysql://47.100.185.77:7100/gz_airport?useUnicode=true&autoReconnect=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false&allowMultiQueries=true&serverTimezone=GMT%2B8
+#    username: root
+#    password: 373616885
+
+spring:
+  shardingsphere:
+    datasource:
+      names: master,slave0,slave1
+      master:
+        type: com.zaxxer.hikari.HikariDataSource
+        #driver-class-name: com.mysql.cj.jdbc.Driver
+        #jdbc-url: jdbc:mysql://47.100.185.77:7100/gz_airport?useUnicode=true&autoReconnect=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false&allowMultiQueries=true&serverTimezone=GMT%2B8
+        driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+        jdbc-url: jdbc:p6spy:mysql://47.100.185.77:7100/gz_airport?useUnicode=true&characterEncoding=utf8&tinyInt1isBit=false&useSSL=false&serverTimezone=GMT
+        username: root
+        password: 373616885
+        auto-commit: true
+        #一个连接的生命时长（毫秒），超时而且没被使用则被释放（retired）
+        max-lifetime: 25200000
+        connection-test-query: select 1 from dual
+      slave0:
+        type: com.zaxxer.hikari.HikariDataSource
+        #driver-class-name: com.mysql.cj.jdbc.Driver
+        #jdbc-url: jdbc:mysql://47.100.185.77:7200/gz_airport?useUnicode=true&autoReconnect=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false&allowMultiQueries=true&serverTimezone=GMT%2B8
+        driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+        jdbc-url: jdbc:p6spy:mysql://47.100.185.77:7200/gz_airport?useUnicode=true&characterEncoding=utf8&tinyInt1isBit=false&useSSL=false&serverTimezone=GMT
+        username: slave
+        password: 373616885
+        max-lifetime: 25200000
+        connection-test-query: select 1 from dual
+        read-only: true
+      slave1:
+        type: com.zaxxer.hikari.HikariDataSource
+        #driver-class-name: com.mysql.cj.jdbc.Driver
+        #jdbc-url: jdbc:mysql://47.100.185.77:7300/gz_airport?useUnicode=true&autoReconnect=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false&allowMultiQueries=true&serverTimezone=GMT%2B8
+        driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+        jdbc-url: jdbc:p6spy:mysql://47.100.185.77:7300/gz_airport?useUnicode=true&characterEncoding=utf8&tinyInt1isBit=false&useSSL=false&serverTimezone=GMT
+        username: slave
+        password: 373616885
+        max-lifetime: 25200000
+        connection-test-query: select 1 from dual
+        read-only: true
+    props:
+      sql.show: true
+    masterslave:
+      load-balance-algorithm-type: round_robin
+    sharding:
+      master-slave-rules:
+        master:
+          master-data-source-name: master
+          slave-data-source-names: slave0,slave1
+
+
+
+mybatis-plus:
+  #配置包别名
+  type-aliases-package: com.qin.sharding.jdbc.**.dao
+  #枚举属性配置扫描
+  type-enums-package: com.qin.sharding.jdbc.**.enums
+  #*Mapper.xml文件扫描
+  mapper-locations: classpath*:com/qin/sharding/jdbc/**/mapper/*Mapper.xml
+  configuration:
+    #mybatis返回map类型数据空值字段显示
+    call-setters-on-nulls: true
+  global-config:
+    db-config:
+      #主键类型
+      id-type: AUTO

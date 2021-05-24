@@ -1,0 +1,31 @@
+spring:
+# DataSource Config
+  datasource:
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    url: jdbc:p6spy:mysql://47.100.185.77:3306/mp?characterEncoding=UTF-8&useSSL=false&autoReconnect=true&failOverReadOnly=false&connectTimeout=1000&socketTimeout=3000&serverTimezone=GMT%2B8
+    username: root
+    password: 373616885
+
+logging:
+  config: classpath:log4j2.xml
+
+mybatis-plus:
+  # 自定义xml文件路径
+  # maven 多模块项目的扫描路径需以 classpath* 开头（即加载多个jar包下的xml文件）
+  mapper-locations: classpath*:com/qin/mp/mapper/*Mapper.xml
+  # config-location: classpath*:mybatis-config.xml
+  # resultType 不需要输入全路径名
+  type-aliases-package: com.qin.mp.domain
+  #枚举属性配置扫描
+  type-enums-package: com.qin.mp.**.enums
+  # configuration 和 config-location 不能同时出现
+  configuration:
+    # 默认是true 驼峰自动映射 mybatis-plus默认是true  mybatis默认是false
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      # 一般不需要配--默认根据url判断
+      db-type: mysql
+      id-type: ASSIGN_ID
+      # 表前缀名
+      # table-prefix: t_

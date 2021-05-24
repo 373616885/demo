@@ -1,0 +1,3 @@
+gradle tasks
+gradle assemble
+gradle build

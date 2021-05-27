@@ -16,10 +16,14 @@ public interface UserMapper extends BaseMapper<User> {
 
     @Select("select * from t_user ${ew.customSqlSegment}")
     List<User> selectAll(@Param(Constants.WRAPPER) Wrapper<User> wrapper);
-
+	
     List<User> selectAllXml(@Param(Constants.WRAPPER) Wrapper<User> wrapper);
 
     IPage<User> selectPageVo(Page<User> page,@Param("password") String password);
 
     IPage<User> selectMyPage(Page<User> page, @Param(Constants.WRAPPER) QueryWrapper<User> queryWrapper);
+
+	@InterceptorIgnore(tenantLine = "true")
+    @Select("select * from user")
+    List<User> tenantLine();
 }

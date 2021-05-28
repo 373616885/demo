@@ -82,6 +82,7 @@ subprojects {
 
     configurations.all {
         resolutionStrategy {
+	    // 强制依赖
             force "p6spy:p6spy:${p6spyVersion}"
             force "com.lmax:disruptor:${disruptorVersion}"
         }

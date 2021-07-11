@@ -1,0 +1,33 @@
+server:
+  port: 3333
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      routes:
+        - id: client_4444
+          uri: lb://client
+          predicates:
+            - Method=GET,POST
+            - Path=/4444/**
+          filters:
+            - StripPrefix=1
+        - id: client_5555
+          uri: http://localhost:5555
+          predicates:
+            - Method=GET,POST
+            - Path=/5555/**
+          filters:
+            - StripPrefix=1
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        namespace: dev
+        group: qinjp
+        # 是否注册自己
+        register-enabled: false
+
+
+

@@ -115,13 +115,13 @@ monitorInterval : 用于指定log4j自动重新配置的监测间隔时间，单
         additivity开启的话，由于这个logger也是满足root的，所以会被打印两遍。
         不过root logger 的level是error，为什么Bar 里面的trace信息也被打印两遍呢
         -->
-        <!-- 单独给com.example.demo做一个配置 -->
-        <logger name="com.example.log" level="trace" additivity="false">
+        <!-- 单独给com.qin.standard.web做一个配置 -->
+        <logger name="com.qin.standard.web" level="trace" additivity="false">
             <appender-ref ref="Console"/>
         </logger>
         <!--默认情况下子Logger会继承父Logger的appender，也就是说子Logger会在父Logger的appender里输出-->
         <!--若是additivity设为false，则子Logger只会在自己的appender里输出-->
-        <logger name="com.example" level="error">
+        <logger name="com.qin.standard" level="error">
             <appender-ref ref="Console"/>
         </logger>
         <!--

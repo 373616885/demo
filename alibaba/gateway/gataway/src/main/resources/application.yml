@@ -6,6 +6,11 @@ spring:
     name: gateway
   cloud:
     gateway:
+#      httpclient:
+#        pool:
+#          max-idle-time: 10000
+#          max-connections: 5
+
       routes:
         - id: client_4444
           uri: lb://client
@@ -21,6 +26,9 @@ spring:
             - Path=/5555/**
           filters:
             - StripPrefix=1
+#      discovery:
+#        locator:
+#          enabled: true
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848

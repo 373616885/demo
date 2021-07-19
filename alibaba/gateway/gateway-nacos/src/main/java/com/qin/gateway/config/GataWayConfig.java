@@ -26,10 +26,7 @@ public class GataWayConfig {
         properties.setProperty("namespace", "dev");
         properties.setProperty("username", "nacos");
         properties.setProperty("password", "373616885");
-        ConfigService configService = NacosFactory.createConfigService(properties);
-        String content = configService.getConfig(DATA_ID, GROUP, TIME_OUT_MS);
-        log.warn(content);
-        return configService;
+        return NacosFactory.createConfigService(properties);
     }
 
     @SneakyThrows

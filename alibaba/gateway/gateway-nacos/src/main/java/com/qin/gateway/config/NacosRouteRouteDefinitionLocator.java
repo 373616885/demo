@@ -8,12 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinitionLocator;
-import org.springframework.cloud.gateway.route.RouteDefinitionRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.Yaml;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.util.concurrent.Executor;
 
@@ -51,7 +49,7 @@ public class NacosRouteRouteDefinitionLocator implements RouteDefinitionLocator 
             }
             @Override
             public void receiveConfigInfo(String configInfo) {
-                log.warn(configInfo);
+                log.warn("configInfo : " + configInfo);
                 applicationEventPublisher.publishEvent(new RefreshRoutesEvent(this));
             }
         };

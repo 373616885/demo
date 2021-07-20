@@ -29,20 +29,4 @@ public class GataWayConfig {
         return NacosFactory.createConfigService(properties);
     }
 
-    @SneakyThrows
-    public static void main(String[] args) {
-        Properties properties = new Properties();
-        properties.put("serverAddr", "127.0.0.1:8848");
-        properties.setProperty("namespace", "dev");
-        properties.setProperty("username", "nacos");
-        properties.setProperty("password", "373616885");
-        ConfigService configService = NacosFactory.createConfigService(properties);
-        String content = configService.getConfig(DATA_ID, GROUP, TIME_OUT_MS);
-        log.warn(content);
-        Yaml yaml = new Yaml();
-        RouteDefinitionModel routeDefinitionModel = yaml.loadAs(content,RouteDefinitionModel.class);
-        System.out.println(routeDefinitionModel.getRoutes());
-
-    }
-
 }
